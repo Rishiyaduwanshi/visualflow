@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} VisualFlow - Generate AI Diagrams{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-900 mb-4">
+            AI-Powered Diagram Generator
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Transform your ideas into professional diagrams instantly. Just describe what you need, and our AI will generate beautiful UML, ERD, flowcharts, and more.
+        </p>
+        
+        <!-- Quick Stats -->
+        <div class="flex justify-center space-x-8 mb-8">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ recent_sessions|length }}+</div>
+                <div class="text-gray-600">Recent Diagrams</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">6</div>
+                <div class="text-gray-600">Diagram Types</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-purple-600">AI</div>
+                <div class="text-gray-600">Powered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-12">
+        <form method="post" action="{% url 'diagrams:generate' %}" id="diagram-form">
+            {% csrf_token %}
+            
+            <!-- Diagram Type Selection -->
+            <div class="mb-6">
+                <label for="diagram_type" class="block text-sm font-semibold text-gray-700 mb-3">
+                    Diagram Type (Auto-detect if not selected)
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diagram_type" value="auto" class="sr-only" checked>
+                        <div class="diagram-type-card border-2 border-blue-500 bg-blue-50 text-blue-700 rounded-lg p-3 text-center transition duration-200 hover:bg-blue-100">
+                            <div class="text-2xl mb-1">🤖</div>
+                            <div class="text-sm font-medium">Auto-Detect</div>
+                        </div>
+                    </label>
+                    
+                    {% for type_key, type_value in diagram_types.items %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diagram_type" value="{{ type_value }}" class="sr-only">
+                        <div class="diagram-type-card border-2 border-gray-200 bg-white rounded-lg p-3 text-center transition duration-200 hover:border-blue-300 hover:bg-blue-50">
+                            <div class="text-2xl mb-1">
+                                {% if type_value == 'uml' %}📊
+                                {% elif type_value == 'erd' %}🗃️
+                                {% elif type_value == 'dfd' %}🔄
+                                {% elif type_value == 'flowchart' %}📋
+                                {% elif type_value == 'system_design' %}🏗️
+                                {% else %}🎨
+                                {% endif %}
+                            </div>
+                            <div class="text-sm font-medium">{{ type_key }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prompt Input -->
+            <div class="mb-6">
+                <label for="prompt" class="block text-sm font-semibold text-gray-700 mb-3">
+                    Describe Your Diagram
+                </label>
+                <textarea 
+                    name="prompt" 
+                    id="prompt" 
+                    rows="6" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    placeholder="Describe what you want to visualize. For example: 'Create a UML class diagram for an e-commerce system with User, Product, and Order classes' or 'Design a flowchart for user authentication process'"
+                    required
+                    minlength="10"
+                ></textarea>
+                <div class="mt-2 text-sm text-gray-500">
+                    Minimum 10 characters. Be specific about relationships, entities, and processes you want to include.
+                </div>
+            </div>
+
+            <!-- Quick Examples -->
+            <div class="mb-6">
+                <div class="text-sm font-semibold text-gray-700 mb-3">Quick Examples:</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button type="button" class="example-btn text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition duration-200">
+                        <div class="font-medium text-blue-600">E-commerce UML</div>
+                        <div class="text-sm text-gray-600">Create a UML class diagram for an online shopping system</div>
+                    </button>
+                    <button type="button" class="example-btn text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition duration-200">
+                        <div class="font-medium text-green-600">Database ERD</div>
+                        <div class="text-sm text-gray-600">Design an ERD for a library management system</div>
+                    </button>
+                    <button type="button" class="example-btn text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition duration-200">
+                        <div class="font-medium text-purple-600">Login Flowchart</div>
+                        <div class="text-sm text-gray-600">Create a flowchart for user authentication process</div>
+                    </button>
+                    <button type="button" class="example-btn text-left p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition duration-200">
+                        <div class="font-medium text-orange-600">System Architecture</div>
+                        <div class="text-sm text-gray-600">Design a system architecture for a chat application</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button 
+                    type="submit" 
+                    id="generate-btn"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
+                >
+                    <span id="btn-text">🚀 Generate Diagram</span>
+                    <span id="btn-loading" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Diagrams -->
+    {% if recent_sessions %}
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Diagrams</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for session in recent_sessions %}
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ session.diagram_type|upper }}
+                    </span>
+                    <span class="text-xs text-gray-500">{{ session.created_at|timesince }} ago</span>
+                </div>
+                <p class="text-sm text-gray-700 mb-3 line-clamp-2">{{ session.prompt_preview }}</p>
+                <a href="{% url 'diagrams:display' session.id %}" 
+                   class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    View Diagram →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-6">
+            <a href="{% url 'diagrams:history' %}" 
+               class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                View All History →
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Diagram type selection
+    const diagramTypeCards = document.querySelectorAll('.diagram-type-card');
+    const diagramTypeInputs = document.querySelectorAll('input[name="diagram_type"]');
+    
+    diagramTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            diagramTypeCards.forEach(card => {
+                card.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
+                card.classList.add('border-gray-200', 'bg-white');
+            });
+            
+            const selectedCard = this.parentElement.querySelector('.diagram-type-card');
+            selectedCard.classList.remove('border-gray-200', 'bg-white');
+            selectedCard.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
+        });
+    });
+    
+    // Example buttons
+    const exampleButtons = document.querySelectorAll('.example-btn');
+    const promptTextarea = document.getElementById('prompt');
+    
+    const examples = {
+        0: "Create a UML class diagram for an e-commerce system with User, Product, Order, and ShoppingCart classes. Include relationships like composition and inheritance, with proper attributes and methods for each class.",
+        1: "Design an Entity Relationship Diagram for a library management system with entities: Book, Author, Member, Loan, and Category. Show primary keys, foreign keys, and relationships with cardinality.",
+        2: "Create a flowchart for a user authentication process including steps: login form, validate credentials, check user status, handle success/failure, and redirect appropriately.",
+        3: "Design a system architecture diagram for a real-time chat application showing components: web client, mobile app, API gateway, chat service, message queue, database, and notification service."
+    };
+    
+    exampleButtons.forEach((btn, index) => {
+        btn.addEventListener('click', function() {
+            promptTextarea.value = examples[index];
+            promptTextarea.focus();
+        });
+    });
+    
+    // Form submission with loading state
+    const form = document.getElementById('diagram-form');
+    const generateBtn = document.getElementById('generate-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnLoading = document.getElementById('btn-loading');
+    
+    form.addEventListener('submit', function() {
+        generateBtn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+    });
+});
+</script>
+{% endblock %}
