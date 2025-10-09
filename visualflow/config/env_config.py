@@ -44,8 +44,7 @@ class EnvConfig:
     LANGCHAIN_TRACING_V2 = os.getenv('LANGCHAIN_TRACING_V2', 'true')
     LANGCHAIN_PROJECT = os.getenv('LANGCHAIN_PROJECT', 'visualflow')
     
-    # PlantUML Configuration
-    PLANTUML_SERVER_URL = os.getenv('PLANTUML_SERVER_URL', 'http://www.plantuml.com/plantuml')
+
     
     # Django Configuration
     SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')

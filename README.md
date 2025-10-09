@@ -1,35 +1,36 @@
 # VisualFlow - AI-Powered Diagram Generator
 
-VisualFlow is a fullstack Django application that generates professional diagrams from textual descriptions using AI. It supports various diagram types including UML, ERD, DFD, flowcharts, system design diagrams, and custom diagrams.
+VisualFlow is a fullstack Django application that generates professional diagrams from textual descriptions using AI. Built with Django, PostgreSQL, Mermaid.js, and powered by Groq AI for intelligent diagram generation.
 
 ## 🚀 Features
 
-- **AI-Powered Generation**: Uses LangChain + Groq LLM to generate PlantUML code from natural language prompts
-- **Multiple Diagram Types**: Supports UML, ERD, DFD, flowcharts, system design, and custom diagrams
+- **AI-Powered Generation**: Uses LangChain + Groq LLM (`llama3-8b-8192`) to generate Mermaid.js diagrams
+- **Multiple Diagram Types**: Supports flowcharts, sequence diagrams, class diagrams, ER diagrams, and more
 - **Auto-Detection**: Automatically detects diagram type from user prompts
-- **Professional Rendering**: High-quality SVG/PNG diagram output via PlantUML server
+- **Professional Rendering**: High-quality SVG/PNG diagram output via Mermaid.js
 - **Session Management**: Stores all generated diagrams with full history
 - **Responsive UI**: Modern, mobile-friendly interface built with Tailwind CSS
-- **Download Options**: Export diagrams as SVG, PNG, or PlantUML code
-- **Admin Interface**: Full Django admin for managing sessions and templates
+- **Download Options**: Export diagrams as SVG or PNG images
+- **Clean User Experience**: Users see only diagrams, technical code is hidden
+- **PostgreSQL Database**: Production-ready database with SSL support
 
 ## 🏗️ Architecture
 
 ```
 visualflow/
-├── config/                    # Configuration management
-│   ├── env_config.py         # Environment variables
+├── config/                    # Modular configuration
+│   ├── env_config.py         # Environment variables & SSL config
 │   └── constants.py          # Application constants
-├── diagrams/                 # Main application
-│   ├── models.py            # Session, Template, Feedback models
-│   ├── views.py             # Class-based views
+├── diagrams/                 # Main Django application
+│   ├── models.py            # Session model with UUID primary keys
+│   ├── views.py             # Clean class-based views
 │   ├── admin.py             # Admin interface
 │   ├── services/            # Business logic
-│   │   ├── ai_service.py    # LangChain + Groq integration
-│   │   └── plantuml_service.py  # PlantUML rendering
-│   └── urls.py              # URL routing
+│   │   ├── ai_service.py    # Template-based generation
+│   │   └── mermaid_service.py  # AI-powered Mermaid generation
+│   └── urls.py              # Simple URL routing
 ├── templates/               # Django templates
-│   └── diagrams/           # App-specific templates
+│   └── diagrams/           # Clean user-focused templates
 ├── theme/                   # Tailwind CSS theme
 └── static/                  # Static files
 ```
@@ -37,17 +38,17 @@ visualflow/
 ## 📋 Requirements
 
 - Python 3.10+
-- PostgreSQL 12+
+- PostgreSQL 12+ (with SSL support)
 - Node.js 16+ (for Tailwind CSS)
 - Groq API Key
-- Internet connection (for PlantUML server)
+- Internet connection (for AI generation)
 
 ## ⚡ Quick Start
 
 ### 1. Clone and Setup
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/rishiyaduwanshi/visualflow
 cd visualflow
 ```
 
@@ -72,21 +73,25 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-# Database Configuration
+# Database Configuration (PostgreSQL with SSL)
 DB_NAME=visualflow_db
 DB_USER=postgres
 DB_PASSWORD=your_postgres_password
 DB_HOST=localhost
 DB_PORT=5432
+DB_SSL_REQUIRE=false
+DB_SSL_MODE=prefer
+DB_SSL_CERT_PATH=
+DB_SSL_KEY_PATH=
+DB_SSL_CA_PATH=
+# CA Certificate content (paste your CA cert here for cloud databases)
+DB_SSL_CA_CERT=
 
 # AI/ML API Keys
 GROQ_API_KEY=your_groq_api_key_here
 LANGCHAIN_API_KEY=your_langchain_api_key_here
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=visualflow
-
-# PlantUML Configuration
-PLANTUML_SERVER_URL=http://www.plantuml.com/plantuml
 
 # Django Configuration
 SECRET_KEY=your-secret-key-here
@@ -96,6 +101,17 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 # Application Configuration
 APP_NAME=VisualFlow
 APP_VERSION=1.0.0
+```
+
+**For cloud PostgreSQL (like Aiven):**
+```env
+DB_NAME=your_cloud_db_name
+DB_USER=your_cloud_user
+DB_PASSWORD=your_cloud_password
+DB_HOST=your-cloud-host.com
+DB_PORT=your_cloud_port
+DB_SSL_REQUIRE=true
+DB_SSL_MODE=require
 ```
 
 ### 5. Database Setup
@@ -149,35 +165,42 @@ All configuration is managed through environment variables in the `config/` dire
 |----------|-------------|---------|
 | `GROQ_API_KEY` | Groq API key for AI generation | Required |
 | `DB_PASSWORD` | PostgreSQL password | Required |
-| `PLANTUML_SERVER_URL` | PlantUML server endpoint | `http://www.plantuml.com/plantuml` |
+| `DB_SSL_REQUIRE` | Enable SSL for database | `false` |
 | `DEBUG` | Django debug mode | `True` |
 
 ## 📊 Supported Diagram Types
 
-| Type | Description | Use Cases |
-|------|-------------|-----------|
-| **UML** | Unified Modeling Language | Class diagrams, sequence diagrams |
-| **ERD** | Entity Relationship Diagrams | Database schema design |
-| **DFD** | Data Flow Diagrams | System data flow analysis |
-| **Flowchart** | Process flowcharts | Business processes, algorithms |
-| **System Design** | Architecture diagrams | System components, microservices |
-| **Custom** | Any other diagram type | General purpose diagrams |
+| Type | Description | Mermaid Support |
+|------|-------------|-----------------|
+| **Flowchart** | Process flowcharts | `flowchart TD/LR` |
+| **Sequence** | Interaction diagrams | `sequenceDiagram` |  
+| **Class** | UML class diagrams | `classDiagram` |
+| **ER** | Entity relationship diagrams | `erDiagram` |
+| **State** | State transition diagrams | `stateDiagram-v2` |
+| **Gantt** | Project timelines | `gantt` |
+| **Pie** | Statistical charts | `pie` |
+| **Custom** | Any other diagram type | Auto-detected |
 
 ## 🎨 Usage Examples
 
-### UML Class Diagram
+### Flowchart Example
 ```
-Create a UML class diagram for an e-commerce system with User, Product, Order, and ShoppingCart classes. Include inheritance, composition, and proper attributes and methods.
-```
-
-### ERD Database Schema
-```
-Design an ERD for a library management system with entities: Book, Author, Member, Loan, and Category. Show primary keys, foreign keys, and relationships.
+Create a user login process flowchart showing authentication steps, validation, and error handling
 ```
 
-### System Architecture
+### Sequence Diagram Example  
 ```
-Create a system architecture diagram for a microservices-based chat application with API gateway, user service, message service, notification service, and database.
+Design a sequence diagram for user registration with email verification between Frontend, Backend, and Email Service
+```
+
+### ER Diagram Example
+```
+Create an ER diagram for an e-commerce database with User, Product, Order, and Category entities with proper relationships
+```
+
+### Class Diagram Example
+```
+Generate a class diagram for a payment processing system with Payment, PaymentMethod, and Transaction classes
 ```
 
 ## 🔄 API Endpoints
@@ -235,6 +258,23 @@ visualflow/
    - API endpoints
    - Error handling
 
+## 🛠️ Technology Stack
+
+### Backend
+- **Django 5.2.7** - Web framework
+- **PostgreSQL** - Production database with SSL support  
+- **LangChain** - AI framework for LLM integration
+- **Groq** - Fast LLM inference (`llama3-8b-8192`)
+
+### Frontend  
+- **Mermaid.js 10.6.1** - Diagram rendering engine
+- **Tailwind CSS** - Utility-first CSS framework
+- **Vanilla JavaScript** - Interactive features
+
+### DevOps
+- **Python-dotenv** - Environment management
+- **Modular Configuration** - Clean separation of concerns
+
 ### Adding New Diagram Types
 
 1. Update `config/constants.py`:
@@ -245,9 +285,9 @@ DIAGRAM_TYPES = {
 }
 ```
 
-2. Add prompts to `DiagramPrompts` class
+2. Add generation logic to `mermaid_service.py`
 3. Update templates and UI
-4. Run migrations if needed
+4. Test with various prompts
 
 ## 🚀 Deployment
 
@@ -308,6 +348,47 @@ coverage report
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
+## 🚀 Deployment
+
+### Production Setup
+
+1. **Environment Variables**
+```bash
+DEBUG=False
+ALLOWED_HOSTS=yourdomain.com
+SECRET_KEY=production-secret-key
+DB_SSL_REQUIRE=true
+DB_SSL_MODE=require
+```
+
+2. **Static Files & Tailwind**
+```bash
+python manage.py collectstatic
+python manage.py tailwind build
+```
+
+3. **Database Migration**
+```bash
+python manage.py migrate
+```
+
+4. **Web Server** (using Gunicorn)
+```bash
+gunicorn visualflow.wsgi:application --bind 0.0.0.0:8000
+```
+
+### Cloud Database Setup (Aiven, AWS RDS, etc.)
+
+1. **Create PostgreSQL database** in your cloud provider
+2. **Enable SSL** and download certificates if needed
+3. **Update .env** with cloud database credentials:
+   ```env
+   DB_SSL_REQUIRE=true
+   DB_SSL_MODE=require
+   DB_SSL_CA_CERT=-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----
+   ```
+4. **Test connection** before deploying
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -318,14 +399,15 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 📞 Support
 
-For support, email support@visualflow.com or create an issue on GitHub.
+For support, email hello@iamabhinav.dev or create an issue on GitHub.
 
 ## 🙏 Acknowledgments
 
 - [Django](https://djangoproject.com/) - Web framework
-- [LangChain](https://langchain.com/) - AI framework
-- [Groq](https://groq.com/) - LLM provider
-- [PlantUML](https://plantuml.com/) - Diagram generation
+- [LangChain](https://langchain.com/) - AI framework  
+- [Groq](https://groq.com/) - Fast LLM inference
+- [Mermaid.js](https://mermaid.js.org/) - Diagram rendering
+- [PostgreSQL](https://postgresql.org/) - Database
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 
 ---

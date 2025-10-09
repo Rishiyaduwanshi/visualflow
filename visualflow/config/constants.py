@@ -12,15 +12,7 @@ class AppConstants:
         'CUSTOM': 'custom'
     }
     
-    # PlantUML Diagram Type Mapping
-    PLANTUML_DIAGRAM_MAPPING = {
-        'uml': '@startuml',
-        'erd': '@startuml',
-        'dfd': '@startuml',
-        'flowchart': '@startuml',
-        'system_design': '@startuml',
-        'custom': '@startuml'
-    }
+
     
     # AI Model Configuration
     AI_MODELS = {

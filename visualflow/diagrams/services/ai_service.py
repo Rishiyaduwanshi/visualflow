@@ -88,9 +88,7 @@ class AIService:
             logger.error(error_message)
             return self._get_fallback_diagram(), error_message
     
-    def generate_plantuml_code(self, prompt: str, diagram_type: str) -> Tuple[str, Optional[str]]:
-        """DEPRECATED - Use generate_mermaid_code instead"""
-        return self.generate_mermaid_code(prompt, diagram_type)
+
     
     def _get_fallback_diagram(self) -> str:
         """Return a simple fallback diagram"""
