@@ -493,7 +493,10 @@ secrets.py
 .secrets
 credentials.json
 service-account.json
+<<<<<<< HEAD
 prompt.md
 .github
+=======
+>>>>>>> origin/main
 
 # End of .gitignore
