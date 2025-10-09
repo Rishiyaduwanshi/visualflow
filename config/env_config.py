@@ -14,6 +14,29 @@ class EnvConfig:
     DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = os.getenv('DB_PORT', '5432')
+    DB_SSL_REQUIRE = os.getenv('DB_SSL_REQUIRE', 'false').lower() == 'true'
+    DB_SSL_MODE = os.getenv('DB_SSL_MODE', 'prefer')
+    DB_SSL_CERT_PATH = os.getenv('DB_SSL_CERT_PATH', '')
+    DB_SSL_KEY_PATH = os.getenv('DB_SSL_KEY_PATH', '')
+    DB_SSL_CA_PATH = os.getenv('DB_SSL_CA_PATH', '')
+    DB_SSL_CA_CERT = os.getenv('DB_SSL_CA_CERT', '')
+    
+    @classmethod
+    def get_ca_cert_file(cls):
+        if cls.DB_SSL_CA_CERT and not cls.DB_SSL_CA_PATH:
+            import tempfile
+            import os as _os
+            
+            # Create temp file for CA cert
+            temp_fd, temp_path = tempfile.mkstemp(suffix='.pem', prefix='ca_cert_')
+            try:
+                with _os.fdopen(temp_fd, 'w') as temp_file:
+                    temp_file.write(cls.DB_SSL_CA_CERT)
+                return temp_path
+            except Exception:
+                _os.unlink(temp_path)
+                return None
+        return cls.DB_SSL_CA_PATH
     
     # AI/ML API Keys
     GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
