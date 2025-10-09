@@ -7,17 +7,17 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Diagram History</h1>
-        <p class="text-gray-600">Browse all your generated diagrams and their details.</p>
+        <h1 class="text-3xl font-bold text-white mb-4">Diagram History</h1>
+        <p class="text-gray-300">Browse all your generated diagrams and their details.</p>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 p-6 mb-8">
         <form method="get" class="flex flex-wrap items-center gap-4">
             <!-- Diagram Type Filter -->
             <div>
-                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Diagram Type</label>
-                <select name="type" id="type" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="type" class="block text-sm font-medium text-white mb-1">Diagram Type</label>
+                <select name="type" id="type" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
                     <option value="">All Types</option>
                     {% for type_key, type_value in diagram_types.items %}
                     <option value="{{ type_value }}" {% if current_type == type_value %}selected{% endif %}>
@@ -29,8 +29,8 @@
 
             <!-- Status Filter -->
             <div>
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select name="status" id="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="status" class="block text-sm font-medium text-white mb-1">Status</label>
+                <select name="status" id="status" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
                     <option value="">All Status</option>
                     <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
                     <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
@@ -40,7 +40,7 @@
 
             <!-- Filter Button -->
             <div class="flex items-end">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                <button type="submit" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition duration-200 shadow-lg">
                     Apply Filters
                 </button>
             </div>
@@ -48,7 +48,7 @@
             <!-- Clear Filters -->
             {% if current_type or current_status %}
             <div class="flex items-end">
-                <a href="{% url 'diagrams:history' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                <a href="{% url 'diagrams:history' %}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 border border-gray-600">
                     Clear Filters
                 </a>
             </div>
@@ -60,25 +60,25 @@
     {% if sessions %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {% for session in sessions %}
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition duration-200">
+        <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden hover:shadow-xl hover:border-gray-700 transition duration-200">
             <!-- Header with Status -->
-            <div class="p-4 border-b border-gray-200">
+            <div class="p-4 border-b border-gray-800">
                 <div class="flex items-center justify-between mb-2">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                        {% if session.diagram_type == 'uml' %}bg-blue-100 text-blue-800
-                        {% elif session.diagram_type == 'erd' %}bg-green-100 text-green-800
-                        {% elif session.diagram_type == 'dfd' %}bg-purple-100 text-purple-800
-                        {% elif session.diagram_type == 'flowchart' %}bg-orange-100 text-orange-800
-                        {% elif session.diagram_type == 'system_design' %}bg-red-100 text-red-800
-                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if session.diagram_type == 'uml' %}bg-purple-900/50 text-purple-300
+                        {% elif session.diagram_type == 'erd' %}bg-green-900/50 text-green-300
+                        {% elif session.diagram_type == 'dfd' %}bg-pink-900/50 text-pink-300
+                        {% elif session.diagram_type == 'flowchart' %}bg-orange-900/50 text-orange-300
+                        {% elif session.diagram_type == 'system_design' %}bg-red-900/50 text-red-300
+                        {% else %}bg-gray-800 text-gray-300{% endif %}">
                         {{ session.diagram_type|upper }}
                     </span>
                     
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        {% if session.status == 'completed' %}bg-green-100 text-green-800
-                        {% elif session.status == 'failed' %}bg-red-100 text-red-800
-                        {% elif session.status == 'processing' %}bg-yellow-100 text-yellow-800
-                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if session.status == 'completed' %}bg-green-900/50 text-green-300
+                        {% elif session.status == 'failed' %}bg-red-900/50 text-red-300
+                        {% elif session.status == 'processing' %}bg-yellow-900/50 text-yellow-300
+                        {% else %}bg-gray-800 text-gray-300{% endif %}">
                         {% if session.status == 'completed' %}✅
                         {% elif session.status == 'failed' %}❌
                         {% elif session.status == 'processing' %}⏳
@@ -86,24 +86,24 @@
                         {{ session.status|title }}
                     </span>
                 </div>
-                <div class="text-xs text-gray-500">{{ session.created_at|date:"M d, Y H:i" }}</div>
+                <div class="text-xs text-gray-400">{{ session.created_at|date:"M d, Y H:i" }}</div>
             </div>
 
             <!-- Content -->
             <div class="p-4">
-                <p class="text-sm text-gray-700 mb-4 line-clamp-3">{{ session.prompt_preview }}</p>
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ session.prompt_preview }}</p>
                 
                 <!-- Diagram Preview -->
                 {% if session.has_diagram %}
-                <div class="mb-4 bg-gray-50 rounded-lg p-3 max-h-32 overflow-hidden">
+                <div class="mb-4 bg-gray-800 rounded-lg p-3 max-h-32 overflow-hidden border border-gray-700">
                     <div class="mermaid-preview transform scale-75 origin-top-left" style="height: 120px; overflow: hidden;">
                         <div class="mermaid">{{ session.generated_uml }}</div>
                     </div>
                 </div>
                 {% else %}
-                <div class="mb-4 bg-gray-100 rounded-lg p-8 text-center">
-                    <div class="text-gray-400 text-2xl mb-2">📋</div>
-                    <div class="text-xs text-gray-500">No diagram available</div>
+                <div class="mb-4 bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
+                    <div class="text-gray-500 text-2xl mb-2">📋</div>
+                    <div class="text-xs text-gray-400">No diagram available</div>
                 </div>
                 {% endif %}
 
@@ -111,27 +111,27 @@
                 <div class="flex items-center justify-between">
                     {% if session.status == 'completed' %}
                     <a href="{% url 'diagrams:display' session.id %}" 
-                       class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition duration-200">
+                       class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-2 rounded text-sm transition duration-200 shadow-lg">
                         View Diagram
                     </a>
                     {% elif session.status == 'failed' %}
-                    <span class="text-red-600 text-sm">Generation failed</span>
+                    <span class="text-red-400 text-sm">Generation failed</span>
                     {% elif session.status == 'processing' %}
-                    <span class="text-yellow-600 text-sm">Processing...</span>
+                    <span class="text-yellow-400 text-sm">Processing...</span>
                     {% endif %}
                     
                     <!-- Quick Download -->
                     {% if session.status == 'completed' %}
                     <div class="flex items-center space-x-1">
                         <a href="{% url 'diagrams:download' session.id %}?format=svg" 
-                           class="text-gray-600 hover:text-blue-600 p-1 rounded transition duration-200" 
+                           class="text-gray-400 hover:text-purple-400 p-1 rounded transition duration-200" 
                            title="Download SVG">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m5-8h-14a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-14a2 2 0 00-2-2z"/>
                             </svg>
                         </a>
                         <a href="{% url 'diagrams:download' session.id %}?format=png" 
-                           class="text-gray-600 hover:text-green-600 p-1 rounded transition duration-200" 
+                           class="text-gray-400 hover:text-pink-400 p-1 rounded transition duration-200" 
                            title="Download PNG">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -147,9 +147,9 @@
 
     <!-- Pagination -->
     {% if is_paginated %}
-    <div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 p-6">
         <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-700">
+            <div class="text-sm text-gray-300">
                 Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
             </div>
             
@@ -157,7 +157,7 @@
                 <!-- Previous Page -->
                 {% if page_obj.has_previous %}
                 <a href="?page={{ page_obj.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" 
-                   class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded transition duration-200">
+                   class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded transition duration-200 border border-gray-600">
                     ← Previous
                 </a>
                 {% endif %}
@@ -165,10 +165,10 @@
                 <!-- Page Numbers -->
                 {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                <span class="bg-blue-600 text-white px-3 py-2 rounded">{{ num }}</span>
+                <span class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2 rounded shadow-lg">{{ num }}</span>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <a href="?page={{ num }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" 
-                   class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded transition duration-200">
+                   class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded transition duration-200 border border-gray-700">
                     {{ num }}
                 </a>
                 {% endif %}
@@ -177,7 +177,7 @@
                 <!-- Next Page -->
                 {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}" 
-                   class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded transition duration-200">
+                   class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded transition duration-200 border border-gray-600">
                     Next →
                 </a>
                 {% endif %}
@@ -188,10 +188,10 @@
 
     {% else %}
     <!-- Empty State -->
-    <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+    <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 p-12 text-center">
         <div class="text-6xl mb-4">📊</div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">No Diagrams Found</h2>
-        <p class="text-gray-600 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">No Diagrams Found</h2>
+        <p class="text-gray-300 mb-8">
             {% if current_type or current_status %}
             No diagrams match your current filters. Try adjusting your search criteria.
             {% else %}
@@ -200,12 +200,12 @@
         </p>
         <div class="space-x-4">
             <a href="{% url 'diagrams:home' %}" 
-               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200">
+               class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg transition duration-200 shadow-lg">
                 Create New Diagram
             </a>
             {% if current_type or current_status %}
             <a href="{% url 'diagrams:history' %}" 
-               class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition duration-200">
+               class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition duration-200 border border-gray-600">
                 Clear Filters
             </a>
             {% endif %}
@@ -223,7 +223,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Mermaid.js for previews
     mermaid.initialize({ 
         startOnLoad: true,
-        theme: 'default',
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#a855f7',
+            primaryTextColor: '#ffffff',
+            primaryBorderColor: '#ec4899',
+            lineColor: '#6b7280',
+            sectionBkgColor: '#1f2937',
+            secondaryColor: '#374151',
+            tertiaryColor: '#4b5563'
+        },
         flowchart: {
             useMaxWidth: true,
             htmlLabels: true
