@@ -31,13 +31,6 @@ class AppConstants:
     # Session Configuration
     SESSION_TIMEOUT = 24 * 60 * 60  # 24 hours in seconds
     
-    # PlantUML Output Formats
-    OUTPUT_FORMATS = {
-        'SVG': 'svg',
-        'PNG': 'png',
-        'PDF': 'pdf'
-    }
-    
     # UI Messages
     MESSAGES = {
         'SUCCESS': {
@@ -89,53 +82,6 @@ class AppConstants:
         'JS': 'js/',
         'IMAGES': 'images/',
         'FONTS': 'fonts/'
-    }
-
-
-class DiagramPrompts:
-    """Pre-defined prompts for different diagram types"""
-    
-    UML_PROMPTS = {
-        'CLASS_DIAGRAM': """
-        Generate a PlantUML class diagram for the given requirements.
-        Include proper relationships (inheritance, composition, aggregation).
-        Use appropriate visibility modifiers (+, -, #, ~).
-        Add attributes and methods for each class.
-        """,
-        
-        'SEQUENCE_DIAGRAM': """
-        Generate a PlantUML sequence diagram showing the interaction flow.
-        Include all actors and participants.
-        Show proper message flows and lifelines.
-        Add activation boxes where appropriate.
-        """,
-        
-        'USE_CASE_DIAGRAM': """
-        Generate a PlantUML use case diagram.
-        Include actors and use cases.
-        Show relationships (extends, includes).
-        Group related use cases in packages if needed.
-        """
-    }
-    
-    ERD_PROMPTS = {
-        'ENTITY_RELATIONSHIP': """
-        Generate a PlantUML ERD (Entity Relationship Diagram).
-        Include entities with their attributes.
-        Show primary keys (PK) and foreign keys (FK).
-        Display relationships with proper cardinality.
-        Use proper ERD notation.
-        """
-    }
-    
-    FLOWCHART_PROMPTS = {
-        'PROCESS_FLOW': """
-        Generate a PlantUML flowchart for the described process.
-        Use appropriate flowchart symbols (start/end, process, decision).
-        Show clear flow direction with arrows.
-        Include decision points with yes/no branches.
-        Ensure logical flow structure.
-        """
     }
 
 

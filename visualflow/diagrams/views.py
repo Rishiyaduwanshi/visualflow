@@ -169,7 +169,6 @@ class DiagramDisplayView(DetailView):
             'diagram_type_display': dict(AppConstants.DIAGRAM_TYPES).get(
                 session.diagram_type, session.diagram_type.title()
             ),
-            'output_formats': AppConstants.OUTPUT_FORMATS,
         })
         return context
 

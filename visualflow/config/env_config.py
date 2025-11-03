@@ -44,8 +44,6 @@ class EnvConfig:
     LANGCHAIN_TRACING_V2 = os.getenv('LANGCHAIN_TRACING_V2', 'true')
     LANGCHAIN_PROJECT = os.getenv('LANGCHAIN_PROJECT', 'visualflow')
     
-
-    
     # Django Configuration
     SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
     DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')

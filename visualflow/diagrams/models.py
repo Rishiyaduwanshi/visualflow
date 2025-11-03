@@ -27,7 +27,7 @@ class Session(models.Model):
     )
     
     generated_uml = models.TextField(
-        help_text="Generated PlantUML code",
+        help_text="Generated Mermaid.js code",
         blank=True,
         null=True
     )

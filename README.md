@@ -238,15 +238,14 @@ visualflow/
 ### Key Components
 
 1. **AI Service** (`diagrams/services/ai_service.py`)
-   - LangChain integration
-   - Groq LLM communication
    - Diagram type detection
-   - PlantUML code generation
+   - Template-based generation fallback
 
-2. **PlantUML Service** (`diagrams/services/plantuml_service.py`)
-   - Server communication
-   - SVG/PNG rendering
-   - Format conversion
+2. **Mermaid Service** (`diagrams/services/mermaid_service.py`)
+   - LangChain + Groq LLM integration
+   - AI-powered Mermaid.js code generation
+   - Syntax validation and cleanup
+   - Multiple diagram type support
 
 3. **Models** (`diagrams/models.py`)
    - Session management

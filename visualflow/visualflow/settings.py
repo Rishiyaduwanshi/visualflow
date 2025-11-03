@@ -222,7 +222,6 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 from config.constants import AppConstants
 
 # Output Formats for Downloads
-OUTPUT_FORMATS = AppConstants.OUTPUT_FORMATS
 
 # AI Model Settings
 GROQ_API_KEY = EnvConfig.GROQ_API_KEY

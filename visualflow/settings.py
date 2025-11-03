@@ -221,10 +221,6 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 # App-specific settings from constants
 from config.constants import AppConstants
 
-# PlantUML Settings
-PLANTUML_SERVER_URL = EnvConfig.PLANTUML_SERVER_URL
-PLANTUML_OUTPUT_FORMATS = AppConstants.OUTPUT_FORMATS
-
 # AI Model Settings
 GROQ_API_KEY = EnvConfig.GROQ_API_KEY
 LANGCHAIN_API_KEY = EnvConfig.LANGCHAIN_API_KEY

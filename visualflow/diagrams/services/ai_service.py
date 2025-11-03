@@ -1,6 +1,3 @@
-"""
-AI Service for generating Mermaid.js diagrams - Simplified Version
-"""
 
 import logging
 from typing import Dict, Any, Optional, Tuple
@@ -87,7 +84,6 @@ class AIService:
             error_message = f"Error generating Mermaid code: {str(e)}"
             logger.error(error_message)
             return self._get_fallback_diagram(), error_message
-    
 
     
     def _get_fallback_diagram(self) -> str:
