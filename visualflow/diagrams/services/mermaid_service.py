@@ -81,14 +81,27 @@ You are an expert in Mermaid.js diagram generation. Generate a professional, wel
 User Request: "{prompt}"
 Diagram Type: {diagram_type}
 
-Requirements:
-1. Generate ONLY valid Mermaid.js syntax
-2. Make it visually appealing with proper styling
-3. Use appropriate colors and styling
-4. Ensure proper node connections and flow
-5. Make it comprehensive and detailed based on the description
+CRITICAL RULES:
+1. Generate ONLY valid Mermaid.js syntax - keep it SIMPLE
+2. For class diagrams, use angle brackets for generics: "List<Book>" NOT "List~Book~"
+3. Do NOT add any styling (classDef, class X Y) - let Mermaid use default theme
+4. Keep relationships simple: Book --> Category or Book --|> Item
+5. Only include: class definitions with methods/properties and relationships
+6. Output ONLY the Mermaid code, no explanations or markdown blocks
 
-Generate the Mermaid code now:
+VALID EXAMPLE:
+classDiagram
+    class Book {{
+        +String title
+        +String isbn
+        +List<Author> authors
+    }}
+    class Author {{
+        +String name
+    }}
+    Book --> Author
+
+Generate the Mermaid code now (NO STYLING, NO classDef):
 """
             
             # Get AI response
@@ -97,6 +110,9 @@ Generate the Mermaid code now:
             
             # Clean the response
             mermaid_code = self._clean_ai_response(mermaid_code)
+            
+            # Fix common syntax errors
+            mermaid_code = self._fix_syntax_errors(mermaid_code)
             
             logger.info(f"AI generated Mermaid code for {diagram_type} diagram")
             return mermaid_code, None
@@ -121,6 +137,41 @@ Generate the Mermaid code now:
                 response = response[start:end].strip()
         
         return response.strip()
+    
+    def _fix_syntax_errors(self, mermaid_code: str) -> str:
+        """Fix common Mermaid syntax errors"""
+        import re
+        
+        # Fix 1: Replace tilde generics List~Type~ with angle brackets List<Type>
+        mermaid_code = re.sub(r'(\w+)~([^~]+)~', r'\1<\2>', mermaid_code)
+        
+        # Fix 2: Remove ALL styling lines (classDef and class X Y)
+        # to avoid any syntax errors - let Mermaid use default theme
+        
+        lines = mermaid_code.split('\n')
+        clean_lines = []
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Skip classDef lines
+            if stripped.startswith('classDef '):
+                logger.debug(f"Removed classDef line: {stripped}")
+                continue
+            
+            # Skip "class X Y" style mapping lines (but keep "class X {{" definitions)
+            if stripped.startswith('class ') and '{' not in line and '--' not in line:
+                # This is a style mapping like "class Book bookStyle"
+                logger.debug(f"Removed class styling: {stripped}")
+                continue
+            
+            # Keep all other lines
+            clean_lines.append(line)
+        
+        mermaid_code = '\n'.join(clean_lines)
+        
+        logger.info("Applied syntax fixes to Mermaid code (removed all styling)")
+        return mermaid_code.strip()
         
     def _generate_fallback(self, prompt: str, diagram_type: str) -> Tuple[Optional[str], Optional[str]]:
         """Fallback template generation"""

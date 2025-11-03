@@ -140,11 +140,6 @@ class DiagramTemplate(models.Model):
         help_text="Template prompt with placeholders"
     )
     
-    sample_uml = models.TextField(
-        help_text="Sample PlantUML code for this template",
-        blank=True,
-        null=True
-    )
     
     description = models.TextField(
         help_text="Description of what this template generates",

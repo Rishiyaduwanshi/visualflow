@@ -9,8 +9,8 @@
     <title>{% block title %}VisualFlow - AI-Powered Diagram Generator{% endblock %}</title>
     <meta name="description" content="Generate professional diagrams from text using AI. Support for UML, ERD, Flowcharts, and more.">
     {% tailwind_css %}
-    <!-- Mermaid.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <!-- Mermaid.js CDN - Version 10.9.1 for better classDiagram support -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -100,24 +100,51 @@
 
     <!-- JavaScript -->
     <script>
-        // Initialize Mermaid.js
+        // Initialize Mermaid.js with beautiful dark theme
         mermaid.initialize({ 
             theme: 'dark',
-            startOnLoad: true,
+            startOnLoad: false,  // We'll render manually
+            securityLevel: 'loose',
+            themeVariables: {
+                darkMode: true,
+                background: '#1f2937',
+                primaryColor: '#a855f7',
+                primaryTextColor: '#f3f4f6',
+                primaryBorderColor: '#9333ea',
+                lineColor: '#ec4899',
+                secondaryColor: '#ec4899',
+                tertiaryColor: '#374151',
+                clusterBkg: '#374151',
+                clusterBorder: '#6b7280',
+                defaultLinkColor: '#ec4899',
+                titleColor: '#f3f4f6',
+                edgeLabelBackground: '#1f2937',
+                nodeTextColor: '#f3f4f6',
+                mainBkg: '#374151',
+                secondBkg: '#4b5563',
+                tertiaryBorderColor: '#9333ea'
+            },
             flowchart: {
                 useMaxWidth: true,
                 htmlLabels: true,
                 curve: 'basis'
             },
-            themeVariables: {
-                primaryColor: '#a855f7',
-                primaryTextColor: '#e5e7eb',
-                primaryBorderColor: '#9333ea',
-                lineColor: '#6b7280',
-                secondaryColor: '#1f2937',
-                tertiaryColor: '#374151',
-                background: '#111827',
-                tertiaryTextColor: '#d1d5db'
+            sequence: {
+                useMaxWidth: true,
+                showSequenceNumbers: true
+            },
+            er: {
+                useMaxWidth: true
+            },
+            class: {
+                useMaxWidth: true
+            },
+            classDiagram: {
+                useMaxWidth: true,
+                htmlLabels: true
+            },
+            gantt: {
+                useMaxWidth: true
             }
         });
         

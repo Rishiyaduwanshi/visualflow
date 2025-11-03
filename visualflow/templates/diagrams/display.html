@@ -13,8 +13,21 @@
 
         <!-- Diagram Display -->
         <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 p-8 mb-8">
+            <!-- Debug: Show raw code -->
+            <details class="mb-4 text-gray-400 text-xs">
+                <summary class="cursor-pointer hover:text-purple-400">🔧 Debug: View Mermaid Code</summary>
+                <pre class="mt-2 p-4 bg-gray-800 rounded overflow-x-auto">{{ session.diagram_svg }}</pre>
+            </details>
+            
+            <!-- Error display area -->
+            <div id="mermaid-error" class="hidden mb-4 p-4 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm">
+                <strong>Mermaid Error:</strong> <span id="error-message"></span>
+            </div>
+            
             <div class="text-center">
-                <div class="mermaid">{{ session.diagram_svg|safe }}</div>
+                <div id="diagram-container" class="mermaid-diagram p-4 rounded overflow-auto">
+                    <!-- Diagram will be rendered here -->
+                </div>
             </div>
         </div>
 
@@ -59,4 +72,36 @@
         </script>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Manual Mermaid rendering with proper error handling
+window.addEventListener('DOMContentLoaded', async function() {
+    const diagramCode = `{{ session.diagram_svg|safe|escapejs }}`;
+    const container = document.getElementById('diagram-container');
+    
+    if (!container || !diagramCode.trim()) {
+        console.error('No diagram code or container found');
+        return;
+    }
+    
+    try {
+        // Render the diagram
+        const { svg } = await mermaid.render('generatedDiagram', diagramCode);
+        container.innerHTML = svg;
+        console.log('✅ Diagram rendered successfully');
+    } catch(error) {
+        console.error('❌ Mermaid rendering failed:', error);
+        const errorDiv = document.getElementById('mermaid-error');
+        const errorSpan = document.getElementById('error-message');
+        if (errorDiv && errorSpan) {
+            errorSpan.textContent = error.message || error.toString();
+            errorDiv.classList.remove('hidden');
+        }
+        // Show raw code as fallback
+        container.innerHTML = `<pre class="text-left text-xs text-gray-800">${diagramCode}</pre>`;
+    }
+});
+</script>
 {% endblock %}

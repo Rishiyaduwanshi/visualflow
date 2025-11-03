@@ -167,20 +167,51 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Reset button state on page load (fixes back button issue)
+    const form = document.getElementById('diagram-form');
+    const generateBtn = document.getElementById('generate-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnLoading = document.getElementById('btn-loading');
+    
+    // Reset to default state
+    if (generateBtn) {
+        generateBtn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+    }
+    
     // Diagram type selection
     const diagramTypeCards = document.querySelectorAll('.diagram-type-card');
     const diagramTypeInputs = document.querySelectorAll('input[name="diagram_type"]');
     
+    // Add click handlers to cards
+    diagramTypeCards.forEach((card, index) => {
+        card.addEventListener('click', function() {
+            // Find the radio button inside this card's parent label
+            const radio = this.parentElement.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                // Trigger change event
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+    
+    // Handle radio button changes
     diagramTypeInputs.forEach(input => {
         input.addEventListener('change', function() {
+            // Remove selected style from all cards
             diagramTypeCards.forEach(card => {
                 card.classList.remove('border-purple-500', 'bg-purple-900/50', 'text-purple-300');
                 card.classList.add('border-gray-700', 'bg-gray-800', 'text-gray-300');
             });
             
+            // Add selected style to clicked card
             const selectedCard = this.parentElement.querySelector('.diagram-type-card');
-            selectedCard.classList.remove('border-gray-700', 'bg-gray-800', 'text-gray-300');
-            selectedCard.classList.add('border-purple-500', 'bg-purple-900/50', 'text-purple-300');
+            if (selectedCard) {
+                selectedCard.classList.remove('border-gray-700', 'bg-gray-800', 'text-gray-300');
+                selectedCard.classList.add('border-purple-500', 'bg-purple-900/50', 'text-purple-300');
+            }
         });
     });
     
@@ -203,15 +234,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Form submission with loading state
-    const form = document.getElementById('diagram-form');
-    const generateBtn = document.getElementById('generate-btn');
-    const btnText = document.getElementById('btn-text');
-    const btnLoading = document.getElementById('btn-loading');
-    
-    form.addEventListener('submit', function() {
+    form.addEventListener('submit', function(e) {
+        // Prevent double submission
+        if (generateBtn.disabled) {
+            e.preventDefault();
+            return false;
+        }
+        
         generateBtn.disabled = true;
         btnText.classList.add('hidden');
         btnLoading.classList.remove('hidden');
+    });
+    
+    // Handle browser back/forward buttons (pageshow event)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || performance.navigation.type === 2) {
+            // Page was loaded from cache (back/forward button)
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        }
     });
 });
 </script>
