@@ -36,7 +36,6 @@ class AIService:
         try:
             prompt_lower = prompt.lower()
             
-            # Score each diagram type based on keyword matches
             scores = {}
             for diagram_type, keywords in self.diagram_keywords.items():
                 score = sum(1 for keyword in keywords if keyword in prompt_lower)

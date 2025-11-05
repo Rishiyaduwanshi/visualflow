@@ -8,7 +8,7 @@ load_dotenv()
 class EnvConfig:
     """Environment configuration class for managing all environment variables"""
     
-    # Database Configuration
+    DB_TYPE = os.getenv('DB_TYPE', 'sqlite').lower()  
     DB_NAME = os.getenv('DB_NAME', 'visualflow_db')
     DB_USER = os.getenv('DB_USER', 'postgres')
     DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')

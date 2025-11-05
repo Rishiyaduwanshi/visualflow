@@ -93,31 +93,39 @@ WSGI_APPLICATION = 'visualflow.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Get CA cert file (from path or content)
-_ca_cert_file = EnvConfig.get_ca_cert_file()
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': EnvConfig.DB_NAME,
-        'USER': EnvConfig.DB_USER,
-        'PASSWORD': EnvConfig.DB_PASSWORD,
-        'HOST': EnvConfig.DB_HOST,
-        'PORT': EnvConfig.DB_PORT,
-        'OPTIONS': {
-            'sslmode': EnvConfig.DB_SSL_MODE if EnvConfig.DB_SSL_REQUIRE else 'prefer',
-            **({
-                'sslcert': EnvConfig.DB_SSL_CERT_PATH,
-                'sslkey': EnvConfig.DB_SSL_KEY_PATH,
-                'sslrootcert': _ca_cert_file,
-            } if EnvConfig.DB_SSL_REQUIRE and any([
-                EnvConfig.DB_SSL_CERT_PATH, 
-                EnvConfig.DB_SSL_KEY_PATH, 
-                _ca_cert_file
-            ]) else {})
-        } if EnvConfig.DB_SSL_REQUIRE else {},
+if EnvConfig.DB_TYPE == 'sqlite':
+    # SQLite Configuration (default)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # PostgreSQL, MySQL, Oracle, or any other database
+    _ca_cert_file = EnvConfig.get_ca_cert_file()
+    DATABASES = {
+        'default': {
+            'ENGINE': f'django.db.backends.{EnvConfig.DB_TYPE}',
+            'NAME': EnvConfig.DB_NAME,
+            'USER': EnvConfig.DB_USER,
+            'PASSWORD': EnvConfig.DB_PASSWORD,
+            'HOST': EnvConfig.DB_HOST,
+            'PORT': EnvConfig.DB_PORT,
+            'OPTIONS': {
+                'sslmode': EnvConfig.DB_SSL_MODE if EnvConfig.DB_SSL_REQUIRE else 'prefer',
+                **({
+                    'sslcert': EnvConfig.DB_SSL_CERT_PATH,
+                    'sslkey': EnvConfig.DB_SSL_KEY_PATH,
+                    'sslrootcert': _ca_cert_file,
+                } if EnvConfig.DB_SSL_REQUIRE and any([
+                    EnvConfig.DB_SSL_CERT_PATH, 
+                    EnvConfig.DB_SSL_KEY_PATH, 
+                    _ca_cert_file
+                ]) else {})
+            } if EnvConfig.DB_SSL_REQUIRE else {},
+        }
+    }
 
 
 # Password validation
@@ -215,18 +223,13 @@ LOGGING = {
     },
 }
 
-# Create logs directory if it doesn't exist
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
-# App-specific settings from constants
 from config.constants import AppConstants
 
-# Output Formats for Downloads
 
-# AI Model Settings
 GROQ_API_KEY = EnvConfig.GROQ_API_KEY
 LANGCHAIN_API_KEY = EnvConfig.LANGCHAIN_API_KEY
 
-# Application Settings
 APP_NAME = EnvConfig.APP_NAME
 APP_VERSION = EnvConfig.APP_VERSION
