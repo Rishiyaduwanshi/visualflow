@@ -8,6 +8,7 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
 from django.http import HttpResponse
 from django.contrib import messages
+from pprint import pprint
 
 from .models import Session
 from config.constants import AppConstants

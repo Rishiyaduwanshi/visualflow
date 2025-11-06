@@ -21,7 +21,7 @@
                 <div class="text-gray-400">Recent Diagrams</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-pink-400">8</div>
+                <div class="text-3xl font-bold text-pink-400"> {{ diagram_types|length }} </div>
                 <div class="text-gray-400">Diagram Types</div>
             </div>
             <div class="text-center">
@@ -92,24 +92,30 @@
             <!-- Quick Examples -->
             <div class="mb-6">
                 <div class="text-sm font-semibold text-white mb-3">Quick Examples:</div>
+
+                {% with btn_class="cursor-pointer example-btn text-left p-3 border border-gray-700 bg-gray-800 rounded-lg hover:border-purple-400 hover:bg-gray-700 transition duration-200" %}
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <button type="button" class="example-btn text-left p-3 border border-gray-700 bg-gray-800 rounded-lg hover:border-purple-400 hover:bg-gray-700 transition duration-200">
+                    <button type="button" class="{{btn_class}}">
                         <div class="font-medium text-purple-400">E-commerce UML</div>
                         <div class="text-sm text-gray-400">Create a UML class diagram for an online shopping system</div>
                     </button>
-                    <button type="button" class="example-btn text-left p-3 border border-gray-700 bg-gray-800 rounded-lg hover:border-pink-400 hover:bg-gray-700 transition duration-200">
+                    <button type="button" class="{{btn_class}}">
                         <div class="font-medium text-pink-400">Database ERD</div>
                         <div class="text-sm text-gray-400">Design an ERD for a library management system</div>
                     </button>
-                    <button type="button" class="example-btn text-left p-3 border border-gray-700 bg-gray-800 rounded-lg hover:border-cyan-400 hover:bg-gray-700 transition duration-200">
+                    <button type="button" class="{{btn_class}}">
                         <div class="font-medium text-cyan-400">Login Flowchart</div>
                         <div class="text-sm text-gray-400">Create a flowchart for user authentication process</div>
                     </button>
-                    <button type="button" class="example-btn text-left p-3 border border-gray-700 bg-gray-800 rounded-lg hover:border-orange-400 hover:bg-gray-700 transition duration-200">
+                    <button type="button" class="{{btn_class}}">
                         <div class="font-medium text-orange-400">System Architecture</div>
                         <div class="text-sm text-gray-400">Design a system architecture for a chat application</div>
                     </button>
                 </div>
+
+                {% endwith %}
+
             </div>
 
             <!-- Submit Button -->
@@ -167,7 +173,6 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Reset button state on page load (fixes back button issue)
     const form = document.getElementById('diagram-form');
     const generateBtn = document.getElementById('generate-btn');
     const btnText = document.getElementById('btn-text');
@@ -180,18 +185,14 @@ document.addEventListener('DOMContentLoaded', function() {
         btnLoading.classList.add('hidden');
     }
     
-    // Diagram type selection
     const diagramTypeCards = document.querySelectorAll('.diagram-type-card');
     const diagramTypeInputs = document.querySelectorAll('input[name="diagram_type"]');
     
-    // Add click handlers to cards
     diagramTypeCards.forEach((card, index) => {
         card.addEventListener('click', function() {
-            // Find the radio button inside this card's parent label
             const radio = this.parentElement.querySelector('input[type="radio"]');
             if (radio) {
                 radio.checked = true;
-                // Trigger change event
                 radio.dispatchEvent(new Event('change'));
             }
         });
@@ -200,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle radio button changes
     diagramTypeInputs.forEach(input => {
         input.addEventListener('change', function() {
-            // Remove selected style from all cards
             diagramTypeCards.forEach(card => {
                 card.classList.remove('border-purple-500', 'bg-purple-900/50', 'text-purple-300');
                 card.classList.add('border-gray-700', 'bg-gray-800', 'text-gray-300');

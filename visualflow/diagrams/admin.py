@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Session, DiagramTemplate, DiagramFeedback
+from .models import Session, DiagramTemplate
 from config.constants import AppConstants
 
 
@@ -45,7 +45,7 @@ class SessionAdmin(admin.ModelAdmin):
     
     def has_diagram(self, obj):
         """Display if session has diagram"""
-        return '✅' if obj.has_diagram else '❌'
+        return obj.has_diagram
     has_diagram.short_description = 'Has Diagram'
     has_diagram.boolean = True
 
@@ -75,28 +75,3 @@ class DiagramTemplateAdmin(admin.ModelAdmin):
         }),
     )
 
-
-@admin.register(DiagramFeedback)
-class DiagramFeedbackAdmin(admin.ModelAdmin):
-    """Admin interface for DiagramFeedback model"""
-    
-    list_display = [
-        'session', 'rating', 'is_helpful', 'created_at'
-    ]
-    
-    list_filter = [
-        'rating', 'is_helpful', 'created_at'
-    ]
-    
-    search_fields = [
-        'feedback_text', 'session__prompt'
-    ]
-    
-    readonly_fields = [
-        'session', 'created_at'
-    ]
-    
-    def get_queryset(self, request):
-        """Optimize queryset with select_related"""
-        queryset = super().get_queryset(request)
-        return queryset.select_related('session')

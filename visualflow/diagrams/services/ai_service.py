@@ -42,7 +42,6 @@ class AIService:
                 if score > 0:
                     scores[diagram_type] = score
             
-            # Return the highest scoring type or default to flowchart
             if scores:
                 detected_type = max(scores, key=scores.get)
                 logger.info(f"Auto-detected diagram type: {detected_type}")
@@ -53,7 +52,7 @@ class AIService:
                 
         except Exception as e:
             logger.error(f"Error detecting diagram type: {str(e)}")
-            return 'flowchart'  # Default fallback
+            return 'flowchart' 
     
     def generate_mermaid_code(self, prompt: str, diagram_type: str) -> Tuple[str, Optional[str]]:
         """
@@ -67,7 +66,6 @@ class AIService:
             Tuple[str, Optional[str]]: (generated_mermaid_code, error_message)
         """
         try:
-            # Use template-based generation for reliability
             from .mermaid_service import mermaid_service
             
             mermaid_code, error = mermaid_service.generate_mermaid_code(prompt, diagram_type)

@@ -8,7 +8,6 @@ from . import views
 app_name = 'diagrams'
 
 urlpatterns = [
-    # Main pages only - clean and simple
     path('', views.HomeView.as_view(), name='home'),
     path('generate/', views.GenerateDiagramView.as_view(), name='generate'),
     path('display/<uuid:session_id>/', views.DiagramDisplayView.as_view(), name='display'),

@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional, Tuple
 from config.constants import AppConstants
 from config.env_config import EnvConfig
 from langchain_groq import ChatGroq
-from langchain.schema import HumanMessage
+from langchain.schema import HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
@@ -75,43 +75,42 @@ class MermaidService:
         """Generate Mermaid code using AI"""
         try:
             # Create comprehensive AI prompt
-            ai_prompt = f"""
-You are an expert in Mermaid.js diagram generation. Generate a professional, well-structured Mermaid diagram based on the user's description.
+            system_prompt = """
+You are an expert in Mermaid.js diagram generation.
+Your job is to generate ONLY valid Mermaid.js syntax based on the user's request.
 
+Follow these critical rules:
+
+1. Always output ONLY valid Mermaid.js syntax — no explanations, no markdown fences, no commentary.
+2. For **DFD (Data Flow Diagrams)**, use `graph TD` or `graph LR`
+3. For **Class Diagrams**, use:
+   - `classDiagram` syntax.
+   - Angle brackets for generics, e.g., `List<Book>` not `List~Book~`.
+   - Only include class names, attributes, methods, and relationships.
+4. For **Sequence Diagrams**, use `sequenceDiagram` syntax with participants and messages.
+5. For **ER Diagrams**, use `erDiagram` syntax following Mermaid’s standard entity relationships.
+6. Do NOT wrap code in ```mermaid or markdown fences.
+7. Keep all diagram labels clean, use Title Case where possible.
+8. For DFDs, prefer using emojis or short descriptors (optional) to make external entities and processes visually distinct.
+9. Do NOT include any explanations, headers, or plain text — only the Mermaid code.
+10. Analyse user prompt that what he wants then give diagram according to him for eg in case of DFD if he says level 0 that means you have to give level 0 not level 1 , if he asks level 1 that means you have to give level 1 not any other thing and similarly whaterver user is saying analyze it and the give the code he might ask any other type of digram so you have to respond on the basis of it and follow mermaid  syntax -> https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js 
+Your only goal: produce clean, valid, and readable Mermaid syntax for any requested diagram type. 
+"""
+
+
+            user_prompt = f"""
 User Request: "{prompt}"
 Diagram Type: {diagram_type}
 
-CRITICAL RULES:
-1. Generate ONLY valid Mermaid.js syntax - keep it SIMPLE
-2. For class diagrams, use angle brackets for generics: "List<Book>" NOT "List~Book~"
-3. Do NOT add any styling (classDef, class X Y) - let Mermaid use default theme
-4. Keep relationships simple: Book --> Category or Book --|> Item
-5. Only include: class definitions with methods/properties and relationships
-6. Output ONLY the Mermaid code, no explanations or markdown blocks
-
-VALID EXAMPLE:
-classDiagram
-    class Book {{
-        +String title
-        +String isbn
-        +List<Author> authors
-    }}
-    class Author {{
-        +String name
-    }}
-    Book --> Author
-
-Generate the Mermaid code now (NO STYLING, NO classDef):
+Please generate the corresponding Mermaid diagram code.
 """
+
             
-            # Get AI response
-            response = self.groq_client.invoke([HumanMessage(content=ai_prompt)])
+            response = self.groq_client.invoke([SystemMessage(system_prompt), HumanMessage(user_prompt)])
             mermaid_code = response.content.strip()
             
-            # Clean the response
             mermaid_code = self._clean_ai_response(mermaid_code)
             
-            # Fix common syntax errors
             mermaid_code = self._fix_syntax_errors(mermaid_code)
             
             logger.info(f"AI generated Mermaid code for {diagram_type} diagram")
@@ -142,11 +141,8 @@ Generate the Mermaid code now (NO STYLING, NO classDef):
         """Fix common Mermaid syntax errors"""
         import re
         
-        # Fix 1: Replace tilde generics List~Type~ with angle brackets List<Type>
         mermaid_code = re.sub(r'(\w+)~([^~]+)~', r'\1<\2>', mermaid_code)
         
-        # Fix 2: Remove ALL styling lines (classDef and class X Y)
-        # to avoid any syntax errors - let Mermaid use default theme
         
         lines = mermaid_code.split('\n')
         clean_lines = []
@@ -154,14 +150,11 @@ Generate the Mermaid code now (NO STYLING, NO classDef):
         for line in lines:
             stripped = line.strip()
             
-            # Skip classDef lines
             if stripped.startswith('classDef '):
                 logger.debug(f"Removed classDef line: {stripped}")
                 continue
             
-            # Skip "class X Y" style mapping lines (but keep "class X {{" definitions)
             if stripped.startswith('class ') and '{' not in line and '--' not in line:
-                # This is a style mapping like "class Book bookStyle"
                 logger.debug(f"Removed class styling: {stripped}")
                 continue
             
@@ -324,5 +317,4 @@ Generate the Mermaid code now (NO STYLING, NO classDef):
             return False, str(e)
 
 
-# Create service instance for easy import
 mermaid_service = MermaidService()
