@@ -4,6 +4,8 @@ from config.constants import AppConstants
 import uuid
 
 
+
+
 class Session(models.Model):
     """
     Model to store user sessions with prompts, diagram types, and generated UML code
@@ -119,49 +121,4 @@ class Session(models.Model):
             self.status = 'failed'
         
         super().save(*args, **kwargs)
-
-
-class DiagramTemplate(models.Model):
-    """
-    Model to store pre-defined diagram templates for different types
-    """
-    name = models.CharField(
-        max_length=100,
-        help_text="Name of the template"
-    )
-    
-    diagram_type = models.CharField(
-        max_length=20,
-        choices=[(value, key) for key, value in AppConstants.DIAGRAM_TYPES.items()],
-        help_text="Type of diagram this template is for"
-    )
-    
-    template_prompt = models.TextField(
-        help_text="Template prompt with placeholders"
-    )
-    
-    
-    description = models.TextField(
-        help_text="Description of what this template generates",
-        blank=True,
-        null=True
-    )
-    
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Whether this template is active"
-    )
-    
-    created_at = models.DateTimeField(
-        default=timezone.now
-    )
-    
-    class Meta:
-        ordering = ['diagram_type', 'name']
-        verbose_name = "Diagram Template"
-        verbose_name_plural = "Diagram Templates"
-    
-    def __str__(self):
-        return f"{self.diagram_type.upper()} - {self.name}"
-
 

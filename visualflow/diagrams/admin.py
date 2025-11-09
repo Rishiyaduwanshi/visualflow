@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Session, DiagramTemplate
+from .models import Session
 from config.constants import AppConstants
 
 
@@ -48,30 +48,4 @@ class SessionAdmin(admin.ModelAdmin):
         return obj.has_diagram
     has_diagram.short_description = 'Has Diagram'
     has_diagram.boolean = True
-
-
-@admin.register(DiagramTemplate)
-class DiagramTemplateAdmin(admin.ModelAdmin):
-    """Admin interface for DiagramTemplate model"""
-    
-    list_display = [
-        'name', 'diagram_type', 'is_active', 'created_at'
-    ]
-    
-    list_filter = [
-        'diagram_type', 'is_active', 'created_at'
-    ]
-    
-    search_fields = [
-        'name', 'description', 'template_prompt'
-    ]
-    
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('name', 'diagram_type', 'is_active')
-        }),
-        ('Template Content', {
-            'fields': ('template_prompt', 'sample_uml', 'description')
-        }),
-    )
 

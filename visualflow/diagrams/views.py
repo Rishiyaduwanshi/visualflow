@@ -3,18 +3,24 @@ Views for the VisualFlow diagram generation application
 """
 
 import logging
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
 from django.http import HttpResponse
 from django.contrib import messages
-from pprint import pprint
 
 from .models import Session
 from config.constants import AppConstants
 
 logger = logging.getLogger(__name__)
 
+def delete_diagram(request, diagram_id):
+    if request.method == 'POST':
+        diagram = get_object_or_404(Session, id=diagram_id)
+        diagram.delete()
+        messages.success(request, 'Diagram deleted successfully!')
+        return redirect('diagrams:history')
+    return redirect('diagrams:history')
 
 class HomeView(TemplateView):
     """
