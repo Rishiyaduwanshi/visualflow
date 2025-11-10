@@ -1,6 +1,13 @@
 from django.contrib import admin
-from .models import Session
+from .models import Session, Contact
 from config.constants import AppConstants
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'subject', 'created_at']
+    search_fields = ['name', 'email', 'subject', 'message']
+    list_filter = ['created_at']
+    readonly_fields = ['created_at']
 
 
 @admin.register(Session)

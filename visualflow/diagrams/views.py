@@ -3,16 +3,29 @@ Views for the VisualFlow diagram generation application
 """
 
 import logging
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
 from django.http import HttpResponse
 from django.contrib import messages
 
-from .models import Session
+from .models import Session, Contact
+from .forms import ContactForm
 from config.constants import AppConstants
 
 logger = logging.getLogger(__name__)
+
+def handleContactForm(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your message has been sent successfully!')
+            return redirect('diagrams:contact')
+    else:
+        form = ContactForm()
+    
+    return render(request, 'diagrams/contact.html', {'form': form})
 
 def delete_diagram(request, diagram_id):
     if request.method == 'POST':

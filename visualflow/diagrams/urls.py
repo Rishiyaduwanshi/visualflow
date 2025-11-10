@@ -13,5 +13,6 @@ urlpatterns = [
     path('delete/<uuid:diagram_id>/', views.delete_diagram, name='delete_diagram'),
     path('display/<uuid:session_id>/', views.DiagramDisplayView.as_view(), name='display'),
     path('download/<uuid:session_id>/', views.DownloadView.as_view(), name='download'),
+    path('contact/', views.handleContactForm, name='contact'),
     path('history/', views.SessionHistoryView.as_view(), name='history'),
 ]

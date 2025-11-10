@@ -13,14 +13,14 @@
 
     <!-- Filters -->
     <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 p-6 mb-8">
-        <form method="get" class="flex flex-wrap items-center gap-4">
+        <form method="get" class="flex flex-wrap items-end gap-4">
             <!-- Diagram Type Filter -->
-            <div>
-                <label for="type" class="block text-sm font-medium text-white mb-1">Diagram Type</label>
-                <select name="type" id="type" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
-                    <option value="">All Types</option>
+            <div class="flex-1 min-w-[200px]">
+                <label for="type" class="block text-sm font-medium text-gray-300 mb-2">Diagram Type</label>
+                <select name="type" id="type" class="w-full cursor-pointer px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+                    <option  value="">All Types</option>
                     {% for type_key, type_value in diagram_types.items %}
-                    <option value="{{ type_value }}" {% if current_type == type_value %}selected{% endif %}>
+                    <option value="{{ type_value }}" {% if current_type == type_value %}selected{% endif %} >
                         {{ type_key }}
                     </option>
                     {% endfor %}
@@ -28,9 +28,9 @@
             </div>
 
             <!-- Status Filter -->
-            <div>
-                <label for="status" class="block text-sm font-medium text-white mb-1">Status</label>
-                <select name="status" id="status" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+            <div class="flex-1 min-w-[200px]">
+                <label for="status" class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                <select name="status" id="status" class="w-full cursor-pointer px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
                     <option value="">All Status</option>
                     <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
                     <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
@@ -39,16 +39,16 @@
             </div>
 
             <!-- Filter Button -->
-            <div class="flex items-end">
-                <button type="submit" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition duration-200 shadow-lg">
+            <div>
+                <button type="submit" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 cursor-pointer text-white px-6 py-2.5 rounded-lg font-medium transition duration-200 shadow-lg">
                     Apply Filters
                 </button>
             </div>
 
             <!-- Clear Filters -->
             {% if current_type or current_status %}
-            <div class="flex items-end">
-                <a href="{% url 'diagrams:history' %}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 border border-gray-600">
+            <div>
+                <a href="{% url 'diagrams:history' %}" class="inline-block bg-gray-700 hover:bg-gray-600 text-white px-6 py-2.5 rounded-lg font-medium transition duration-200 border border-gray-600">
                     Clear Filters
                 </a>
             </div>
@@ -60,7 +60,7 @@
     {% if sessions %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {% for session in sessions %}
-        <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden hover:shadow-xl hover:border-gray-700 transition duration-200">
+        <div class="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden hover:shadow-xl hover:border-gray-700 transition duration-200 flex flex-col h-full">
             <!-- Header with Status -->
             <div class="p-4 border-b border-gray-800">
                 <div class="flex items-center justify-between mb-2">
@@ -89,70 +89,79 @@
                 <div class="text-xs text-gray-400">{{ session.created_at|date:"M d, Y H:i" }}</div>
             </div>
 
-            <!-- Content -->
-            <div class="p-4">
-                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ session.prompt_preview }}</p>
+            <!-- Content - Flex grow to push actions to bottom -->
+            <div class="p-4 flex-grow flex flex-col">
+                <!-- Description -->
+                <div class="flex-grow">
+                    <p class="text-sm text-gray-300 mb-4">{{ session.prompt_preview }}</p>
+                </div>
                 
-                <!-- Diagram Preview -->
+                <!-- Diagram Preview with fixed position at bottom of content -->
                 {% if session.has_diagram %}
-                <div class="mb-4 bg-gray-800 rounded-lg p-3 max-h-32 overflow-hidden border border-gray-700">
+                <div class="mb-4 bg-gray-800 rounded-lg p-3 h-32 overflow-hidden border border-gray-700">
                     <div class="mermaid-preview transform scale-75 origin-top-left" style="height: 120px; overflow: hidden;">
                         <div class="mermaid">{{ session.generated_uml }}</div>
                     </div>
                 </div>
                 {% else %}
-                <div class="mb-4 bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
-                    <div class="text-gray-500 text-2xl mb-2">📋</div>
-                    <div class="text-xs text-gray-400">No diagram available</div>
+                <div class="mb-4 bg-gray-800 rounded-lg h-32 flex items-center justify-center border border-gray-700">
+                    <div class="text-center">
+                        <div class="text-gray-500 text-2xl mb-1">📋</div>
+                        <div class="text-xs text-gray-400">No diagram available</div>
+                    </div>
                 </div>
                 {% endif %}
 
-                <!-- Actions -->
-                <div class="flex items-center justify-between">
-                    {% if session.status == 'completed' %}
-                    <a href="{% url 'diagrams:display' session.id %}" 
-                       class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-2 rounded text-sm transition duration-200 shadow-lg">
-                        View Diagram
-                    </a>
-                    {% elif session.status == 'failed' %}
-                    <span class="text-red-400 text-sm">Generation failed</span>
-                    {% elif session.status == 'processing' %}
-                    <span class="text-yellow-400 text-sm">Processing...</span>
-                    {% endif %}
-                    <form method="POST" action="{% url 'diagrams:delete_diagram' session.id %}" class="inline" onsubmit="return confirm('Are you sure you want to delete this diagram?');">
-                        {% csrf_token %}
-                        <button type="submit" 
-                            style="background: linear-gradient(to right, rgb(220, 38, 38), rgb(185, 28, 28));" 
-                            class="inline-flex items-center justify-center text-white cursor-pointer px-3 py-2 rounded text-sm font-medium shadow-lg hover:opacity-90 transition-all duration-200">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Delete
-                        </button>
-                    </form>
-
+                <!-- Actions - Always at bottom -->
+                <div class="space-y-3 mt-auto">
+                    <!-- View/Status Button -->
+                    <div class="flex items-center flex-1 justify-between">
+                        {% if session.status == 'completed' %}
+                        <a href="{% url 'diagrams:display' session.id %}" 
+                           class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium text-center transition duration-200 shadow-lg">
+                            View Diagram
+                        </a>
+                        {% elif session.status == 'failed' %}
+                        <span class="flex-1 text-center text-red-400 text-sm font-medium py-2">Generation failed</span>
+                        {% elif session.status == 'processing' %}
+                        <span class="flex-1 text-center text-yellow-400 text-sm font-medium py-2">Processing...</span>
+                        {% endif %}
+                    </div>
                     
-                    <!-- Quick Download -->
-                    {% if session.status == 'completed' %}
-                    <div class="flex items-center space-x-3">
+                    <!-- Download & Delete Buttons -->
+                    <div class="flex items-center gap-2">
+                        {% if session.status == 'completed' %}
+                        <!-- Download Buttons -->
                         <a href="{% url 'diagrams:download' session.id %}?format=svg" 
-                           class="inline-flex items-center text-gray-300 hover:text-purple-400 px-2 py-1 rounded transition-all duration-200 hover:bg-purple-900/20" 
+                           class="flex-1 inline-flex items-center justify-center text-gray-300 hover:text-purple-400 bg-gray-800 hover:bg-purple-900/30 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-gray-700" 
                            title="Download SVG">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                             </svg>
-                            <span class="text-xs font-medium">SVG</span>
+                            SVG
                         </a>
                         <a href="{% url 'diagrams:download' session.id %}?format=png" 
-                           class="inline-flex items-center text-gray-300 hover:text-pink-400 px-2 py-1 rounded transition-all duration-200 hover:bg-pink-900/20" 
+                           class="flex-1 inline-flex items-center justify-center text-gray-300 hover:text-pink-400 bg-gray-800 hover:bg-pink-900/30 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-gray-700" 
                            title="Download PNG">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                             </svg>
-                            <span class="text-xs font-medium">PNG</span>
+                            PNG
                         </a>
+                        {% endif %}
+                        
+                        <!-- Delete Button -->
+                        <form method="POST" action="{% url 'diagrams:delete_diagram' session.id %}" class="{% if session.status == 'completed' %}flex-1{% else %}w-full{% endif %}" onsubmit="return confirm('Are you sure you want to delete this diagram?');">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                class="w-full cursor-pointer inline-flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all duration-200">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Delete
+                            </button>
+                        </form>
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
