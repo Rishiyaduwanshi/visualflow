@@ -1,20 +1,34 @@
 """
-Mermaid.js Diagram Service - AI-powered diagram generation
+Mermaid.js Diagram Service - AI-powered diagram generation with two-step approach
 """
 
 import logging
+import json
 from typing import Dict, Any, Optional, Tuple
 from config.constants import AppConstants
 from config.env_config import EnvConfig
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage, SystemMessage
 
+# Import specialized prompts
+from .prompts.analyzer_prompt import ANALYZER_PROMPT
+from .prompts.flowchart_prompt import FLOWCHART_PROMPT
+from .prompts.class_diagram_prompt import CLASS_DIAGRAM_PROMPT
+from .prompts.er_diagram_prompt import ER_DIAGRAM_PROMPT
+from .prompts.sequence_diagram_prompt import SEQUENCE_DIAGRAM_PROMPT
+from .prompts.state_diagram_prompt import STATE_DIAGRAM_PROMPT
+from .prompts.dfd_prompt import DFD_PROMPT
+from .prompts.system_design_prompt import SYSTEM_DESIGN_PROMPT
+from .prompts.custom_prompt import CUSTOM_PROMPT
+
 logger = logging.getLogger(__name__)
 
 
 class MermaidService:
     """
-    Service for generating Mermaid.js diagrams (frontend rendering)
+    Service for generating Mermaid.js diagrams using two-step AI approach:
+    Step 1: Analyze user prompt and enhance it
+    Step 2: Generate diagram with specialized prompt for that diagram type
     """
     
     def __init__(self):
@@ -25,6 +39,8 @@ class MermaidService:
             'class': 'classDiagram', 
             'state': 'stateDiagram-v2',
             'er': 'erDiagram',
+            'erd': 'erDiagram',
+            'uml': 'classDiagram',
             'gantt': 'gantt',
             'pie': 'pie',
             'journey': 'journey',
@@ -34,17 +50,32 @@ class MermaidService:
             'quadrant': 'quadrantChart'
         }
         
+        # Map diagram types to their specialized prompts
+        self.prompt_map = {
+            'flowchart': FLOWCHART_PROMPT,
+            'sequence': SEQUENCE_DIAGRAM_PROMPT,
+            'class': CLASS_DIAGRAM_PROMPT,
+            'uml': CLASS_DIAGRAM_PROMPT,
+            'er': ER_DIAGRAM_PROMPT,
+            'erd': ER_DIAGRAM_PROMPT,
+            'state': STATE_DIAGRAM_PROMPT,
+            'dfd': DFD_PROMPT,
+            'system_design': SYSTEM_DESIGN_PROMPT,
+            'custom': CUSTOM_PROMPT,
+        }
+        
         # Initialize AI client
         try:
             self.groq_client = ChatGroq(
                 groq_api_key=EnvConfig.GROQ_API_KEY,
-                model_name="openai/gpt-oss-120b"
+                model_name="openai/gpt-oss-120b",
+                temperature=0.3
             )
         except Exception as e:
             logger.error(f"Failed to initialize Groq client: {e}")
             self.groq_client = None
     
-    def generate_mermaid_code(self, prompt: str, diagram_type: str = 'flowchart') -> Tuple[Optional[str], Optional[str]]:
+    def generate_mermaid_code(self, prompt: str, diagram_type: str = 'flowchart') -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
         Generate Mermaid.js code using AI based on prompt and diagram type
         
@@ -53,73 +84,148 @@ class MermaidService:
             diagram_type (str): Type of diagram to generate
             
         Returns:
-            Tuple[Optional[str], Optional[str]]: (mermaid_code, error_message)
+            Tuple[Optional[str], Optional[str], Optional[str]]: (mermaid_code, error_message, detected_diagram_type)
         """
         try:
             if not prompt.strip():
-                return None, "Prompt cannot be empty"
+                return None, "Prompt cannot be empty", None
             
             # Use AI to generate if available
             if self.groq_client:
                 return self._generate_with_ai(prompt, diagram_type)
             else:
                 # Fallback to templates
-                return self._generate_fallback(prompt, diagram_type)
+                code, error = self._generate_fallback(prompt, diagram_type)
+                return code, error, None
             
         except Exception as e:
             error_msg = f"Error generating Mermaid code: {str(e)}"
             logger.error(error_msg)
-            return None, error_msg
+            return None, error_msg, None
             
-    def _generate_with_ai(self, prompt: str, diagram_type: str) -> Tuple[Optional[str], Optional[str]]:
-        """Generate Mermaid code using AI"""
+    def _generate_with_ai(self, prompt: str, diagram_type: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+        """
+        Generate Mermaid code using TWO-STEP AI approach:
+        Step 1: Analyze and enhance user prompt
+        Step 2: Generate diagram with specialized prompt
+        
+        Returns:
+            Tuple[Optional[str], Optional[str], Optional[str]]: (mermaid_code, error_message, detected_diagram_type)
+        """
         try:
-            # Create comprehensive AI prompt
-            system_prompt = """
-You are an expert in Mermaid.js diagram generation.
-Your job is to generate ONLY valid Mermaid.js syntax based on the user's request.
-
-Follow these critical rules:
-
-1. Always output ONLY valid Mermaid.js syntax — no explanations, no markdown fences, no commentary.
-2. For **DFD (Data Flow Diagrams)**, use `graph TD` or `graph LR`
-3. For **Class Diagrams**, use:
-   - `classDiagram` syntax.
-   - Angle brackets for generics, e.g., `List<Book>` not `List~Book~`.
-   - Only include class names, attributes, methods, and relationships.
-4. For **Sequence Diagrams**, use `sequenceDiagram` syntax with participants and messages.
-5. For **ER Diagrams**, use `erDiagram` syntax following Mermaid’s standard entity relationships.
-6. Do NOT wrap code in ```mermaid or markdown fences.
-7. Keep all diagram labels clean, use Title Case where possible.
-8. For DFDs, prefer using emojis or short descriptors (optional) to make external entities and processes visually distinct.
-9. Do NOT include any explanations, headers, or plain text — only the Mermaid code.
-10. Analyse user prompt that what he wants then give diagram according to him for eg in case of DFD if he says level 0 that means you have to give level 0 not level 1 , if he asks level 1 that means you have to give level 1 not any other thing and similarly whaterver user is saying analyze it and the give the code he might ask any other type of digram so you have to respond on the basis of it and follow mermaid  syntax -> https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js 
-Your only goal: produce clean, valid, and readable Mermaid syntax for any requested diagram type. 
-"""
-
-
-            user_prompt = f"""
-User Request: "{prompt}"
-Diagram Type: {diagram_type}
-
-Please generate the corresponding Mermaid diagram code.
-"""
-
+            # STEP 1: Analyze user prompt to understand intent and enhance it
+            logger.info(f"Step 1: Analyzing user prompt for diagram type: {diagram_type}")
+            analysis = self._analyze_prompt(prompt, diagram_type)
             
-            response = self.groq_client.invoke([SystemMessage(system_prompt), HumanMessage(user_prompt)])
-            mermaid_code = response.content.strip()
+            detected_type = None
+            if not analysis:
+                logger.warning("Analysis failed, using original prompt")
+                enhanced_prompt = prompt
+                final_diagram_type = diagram_type
+            else:
+                enhanced_prompt = analysis.get('enhanced_prompt', prompt)
+                detected_type = analysis.get('diagram_type', diagram_type)
+                
+                # Use analyzed diagram type if confidence is high
+                if analysis.get('confidence', 0) > 0.7:
+                    final_diagram_type = detected_type
+                else:
+                    final_diagram_type = diagram_type
+                
+                logger.info(f"Analysis complete. Final diagram type: {final_diagram_type}")
+                logger.info(f"Enhanced prompt: {enhanced_prompt[:100]}...")
             
+            # STEP 2: Generate diagram using specialized prompt
+            logger.info(f"Step 2: Generating Mermaid code with specialized prompt")
+            mermaid_code = self._generate_with_specialized_prompt(enhanced_prompt, final_diagram_type)
+            
+            if not mermaid_code:
+                logger.error("Failed to generate with specialized prompt, using fallback")
+                code, error = self._generate_fallback(prompt, diagram_type)
+                return code, error, detected_type
+            
+            # Clean and fix syntax errors
             mermaid_code = self._clean_ai_response(mermaid_code)
-            
             mermaid_code = self._fix_syntax_errors(mermaid_code)
             
-            logger.info(f"AI generated Mermaid code for {diagram_type} diagram")
-            return mermaid_code, None
+            logger.info(f"Successfully generated Mermaid code for {final_diagram_type} diagram")
+            return mermaid_code, None, final_diagram_type
             
         except Exception as e:
             logger.error(f"AI generation failed: {e}")
-            # Fallback to templates
-            return self._generate_fallback(prompt, diagram_type)
+            code, error = self._generate_fallback(prompt, diagram_type)
+            return code, error, None
+    
+    def _analyze_prompt(self, prompt: str, diagram_type: str) -> Optional[Dict]:
+        """
+        STEP 1: Analyze user prompt to understand requirements
+        Returns analysis with enhanced prompt
+        """
+        try:
+            user_message = f"""
+User Prompt: "{prompt}"
+Suggested Diagram Type: {diagram_type}
+
+Analyze this prompt and return the JSON response.
+"""
+            
+            response = self.groq_client.invoke([
+                SystemMessage(ANALYZER_PROMPT),
+                HumanMessage(user_message)
+            ])
+            
+            # Parse JSON response
+            content = response.content.strip()
+            
+            # Remove markdown code blocks if present
+            if '```json' in content:
+                content = content.split('```json')[1].split('```')[0].strip()
+            elif '```' in content:
+                content = content.split('```')[1].split('```')[0].strip()
+            
+            analysis = json.loads(content)
+            logger.info(f"Prompt analysis successful: {analysis.get('diagram_type')} (confidence: {analysis.get('confidence')})")
+            
+            return analysis
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse analysis JSON: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Prompt analysis failed: {e}")
+            return None
+    
+    def _generate_with_specialized_prompt(self, prompt: str, diagram_type: str) -> Optional[str]:
+        """
+        STEP 2: Generate diagram using specialized system prompt for the diagram type
+        """
+        try:
+            # Get the specialized prompt for this diagram type
+            system_prompt = self.prompt_map.get(diagram_type)
+            
+            if not system_prompt:
+                logger.warning(f"No specialized prompt for {diagram_type}, using generic approach")
+                system_prompt = FLOWCHART_PROMPT  # Default fallback
+            
+            user_message = f"""
+User Request: {prompt}
+
+Generate the {diagram_type} diagram now.
+"""
+            
+            response = self.groq_client.invoke([
+                SystemMessage(system_prompt),
+                HumanMessage(user_message)
+            ])
+            
+            mermaid_code = response.content.strip()
+            logger.info(f"Generated Mermaid code using specialized {diagram_type} prompt")
+            
+            return mermaid_code
+            
+        except Exception as e:
+            logger.error(f"Specialized prompt generation failed: {e}")
+            return None
             
     def _clean_ai_response(self, response: str) -> str:
         """Clean AI response to extract only Mermaid code"""
@@ -138,11 +244,156 @@ Please generate the corresponding Mermaid diagram code.
         return response.strip()
     
     def _fix_syntax_errors(self, mermaid_code: str) -> str:
-        """Fix common Mermaid syntax errors"""
+        """
+        Fix common Mermaid syntax errors
+        
+        This method fixes:
+        1. Emojis in node IDs (moves them to labels only)
+        2. ER diagram attribute syntax (type name PK/FK format)
+        3. ER diagram invalid relationship cardinality
+        4. Reserved keywords as node IDs (adds 'Node' suffix)
+        5. Class diagram tilde syntax for generics
+        6. Removes unsupported styling directives
+        """
         import re
         
         mermaid_code = re.sub(r'(\w+)~([^~]+)~', r'\1<\2>', mermaid_code)
         
+        # Fix emojis in node IDs (move them to labels)
+        # Pattern: emoji[label] should become nodeId[emoji label]
+        def fix_emoji_nodes(match):
+            full_match = match.group(0)
+            emoji_part = match.group(1)
+            label_part = match.group(2)
+            
+            # Generate a clean node ID from the label
+            clean_id = re.sub(r'[^a-zA-Z0-9_]', '', label_part)
+            if not clean_id:
+                clean_id = f"Node{hash(emoji_part) % 10000}"
+            
+            # Return the corrected format: nodeId[emoji label]
+            return f"{clean_id}[{emoji_part} {label_part}]"
+        
+        # Match patterns like: 🧑‍🎓[Student] or 🏢[Admin]
+        mermaid_code = re.sub(r'([^\w\s\[\]]+)\[([^\]]+)\]', fix_emoji_nodes, mermaid_code)
+        
+        # Fix ER Diagram attribute syntax
+        # Incorrect: PK attributeName or FK attributeName
+        # Correct: type attributeName PK or type attributeName FK
+        def fix_er_attribute(match):
+            indent = match.group(1)
+            key_type = match.group(2)  # PK or FK
+            attr_name = match.group(3)
+            
+            # Default to string type, append key constraint
+            return f"{indent}string {attr_name} {key_type}"
+        
+        # Match patterns like: "        PK bookId" or "        FK authorId"
+        mermaid_code = re.sub(
+            r'^(\s+)(PK|FK)\s+(\w+)\s*$',
+            fix_er_attribute,
+            mermaid_code,
+            flags=re.MULTILINE
+        )
+        
+        # Also fix patterns like "        PK bookId string" (reversed order)
+        def fix_er_attribute_reversed(match):
+            indent = match.group(1)
+            key_type = match.group(2)  # PK or FK
+            attr_name = match.group(3)
+            attr_type = match.group(4)
+            
+            return f"{indent}{attr_type} {attr_name} {key_type}"
+        
+        mermaid_code = re.sub(
+            r'^(\s+)(PK|FK)\s+(\w+)\s+(\w+)\s*$',
+            fix_er_attribute_reversed,
+            mermaid_code,
+            flags=re.MULTILINE
+        )
+        
+        # Fix composite keys: int book_id PK FK -> int book_id PK (remove duplicate constraints)
+        # Mermaid doesn't support multiple constraints on one attribute
+        mermaid_code = re.sub(
+            r'(\s+\w+\s+\w+)\s+(PK|FK)\s+(PK|FK)',
+            r'\1 \2',  # Keep only first constraint
+            mermaid_code
+        )
+        
+        # Fix ER Diagram invalid relationship syntax
+        # Valid Mermaid ER relationships: ||--||, ||--o{, }o--||, }|--||, ||--|{, }o--o|, etc.
+        # Invalid patterns like }o--o{ need to be fixed
+        # Replace invalid combinations with valid ones
+        er_relationship_fixes = {
+            r'\}o--o\{': '}o--o|',  # many-to-optional-many -> many-to-optional-one
+            r'\}\|--\|\{': '}|--|{',  # Fix malformed many-to-many
+        }
+        
+        for invalid_pattern, valid_replacement in er_relationship_fixes.items():
+            mermaid_code = re.sub(invalid_pattern, valid_replacement, mermaid_code)
+        
+        # Fix Class Diagram relationship multiplicity syntax
+        # Incorrect: Order "*--" ShoppingCart or Customer "1" --> "*" Order
+        # Correct: Order "1" *-- "1" ShoppingCart or Customer "1" --> "0..*" Order
+        
+        # Fix missing quotes around multiplicity on LEFT side of relationship
+        # Pattern: ClassName multiplicity relationship (without quotes)
+        mermaid_code = re.sub(
+            r'(\w+)\s+(\d+|\*|0\.\.1|1\.\.\*|0\.\.\*)\s+(-->|<\|--|o--|\.\.>|\*--|\.\.)',
+            r'\1 "\2" \3',
+            mermaid_code
+        )
+        
+        # Fix missing quotes around multiplicity on RIGHT side before second class
+        # Pattern: relationship multiplicity ClassName (without quotes)
+        mermaid_code = re.sub(
+            r'(-->|<\|--|o--|\.\.>|\*--|\.\.)\s+(\d+|\*|0\.\.1|1\.\.\*|0\.\.\*)\s+(\w+)',
+            r'\1 "\2" \3',
+            mermaid_code
+        )
+        
+        # Fix patterns like: Order "*--" ShoppingCart : contains
+        # Should be: Order "1" *-- "*" ShoppingCart : contains
+        # Match: ClassName "*--" ClassName (missing multiplicity on one side)
+        mermaid_code = re.sub(
+            r'(\w+)\s+"([^"]+)"\s+(\*--|o--|<\|--)\s+(\w+)',
+            r'\1 "\2" \3 "1" \4',
+            mermaid_code
+        )
+        
+        # Reverse case: ClassName *-- "*" ClassName (missing left multiplicity)
+        mermaid_code = re.sub(
+            r'(\w+)\s+(\*--|o--|<\|--)\s+"([^"]+)"\s+(\w+)',
+            r'\1 "1" \2 "\3" \4',
+            mermaid_code
+        )
+        
+        # Fix reserved keywords in node IDs
+        # Mermaid reserved words that cannot be used as node IDs
+        reserved_keywords = ['end', 'start', 'subgraph', 'graph', 'classDef', 'class', 'click', 'callback', 'link', 'style']
+        
+        for keyword in reserved_keywords:
+            # Replace reserved keyword as standalone node ID: end[label] -> endNode[label]
+            mermaid_code = re.sub(
+                rf'\b{keyword}\[',
+                f'{keyword}Node[',
+                mermaid_code,
+                flags=re.IGNORECASE
+            )
+            # Also fix in connections: --> end or --> end[label]
+            mermaid_code = re.sub(
+                rf'(-->|---)\s+{keyword}(?=\[|\s|$)',
+                rf'\1 {keyword}Node',
+                mermaid_code,
+                flags=re.IGNORECASE
+            )
+            # Fix source nodes: end --> or end[label] -->
+            mermaid_code = re.sub(
+                rf'\b{keyword}(?=\s*(?:-->|---))',
+                f'{keyword}Node',
+                mermaid_code,
+                flags=re.IGNORECASE
+            )
         
         lines = mermaid_code.split('\n')
         clean_lines = []
@@ -163,143 +414,9 @@ Please generate the corresponding Mermaid diagram code.
         
         mermaid_code = '\n'.join(clean_lines)
         
-        logger.info("Applied syntax fixes to Mermaid code (removed all styling)")
+        logger.info("Applied syntax fixes to Mermaid code (removed styling, fixed emoji nodes, ER attributes, ER relationships, and reserved keywords)")
         return mermaid_code.strip()
-        
-    def _generate_fallback(self, prompt: str, diagram_type: str) -> Tuple[Optional[str], Optional[str]]:
-        """Fallback template generation"""
-        try:
-            starter = self.diagram_types.get(diagram_type, 'flowchart TD')
-            
-            if diagram_type == 'flowchart' or diagram_type == 'custom':
-                mermaid_code = self._generate_flowchart(prompt, starter)
-            elif diagram_type == 'sequence':
-                mermaid_code = self._generate_sequence_diagram(prompt)
-            elif diagram_type == 'class' or diagram_type == 'uml':
-                mermaid_code = self._generate_class_diagram(prompt)
-            elif diagram_type == 'er' or diagram_type == 'erd':
-                mermaid_code = self._generate_er_diagram(prompt)
-            else:
-                mermaid_code = self._generate_flowchart(prompt, starter)
-            
-            return mermaid_code, None
-            
-        except Exception as e:
-            return None, f"Fallback generation failed: {str(e)}"
     
-    def _generate_flowchart(self, prompt: str, starter: str = 'flowchart TD') -> str:
-        """Generate flowchart Mermaid code"""
-        return f"""flowchart TD
-    A[Start] --> B[User Input]
-    B --> C[Process Request]
-    C --> D{{Validate}}
-    D -->|Valid| E[Execute Action]
-    D -->|Invalid| F[Show Error]
-    E --> G[Return Result]
-    F --> B
-    G --> H[End]"""
-    
-    def _generate_sequence_diagram(self, prompt: str) -> str:
-        """Generate sequence diagram Mermaid code"""
-        return """sequenceDiagram
-    participant User
-    participant Frontend
-    participant Backend
-    participant Database
-    
-    User->>Frontend: User Action
-    Frontend->>Backend: API Request
-    Backend->>Database: Query Data
-    Database-->>Backend: Return Data
-    Backend-->>Frontend: API Response
-    Frontend-->>User: Update UI
-    
-    Note over User,Database: System Interaction Flow"""
-    
-    def _generate_class_diagram(self, prompt: str) -> str:
-        """Generate class diagram Mermaid code"""
-        return """classDiagram
-    class User {
-        +id: int
-        +name: string
-        +email: string
-        +login()
-        +logout()
-    }
-    
-    class Session {
-        +id: string
-        +userId: int
-        +createdAt: datetime
-        +isActive: boolean
-        +create()
-        +destroy()
-    }
-    
-    class Diagram {
-        +id: string
-        +type: string
-        +content: string
-        +createdAt: datetime
-        +generate()
-        +save()
-    }
-    
-    User ||--o{ Session : has
-    User ||--o{ Diagram : creates
-    
-    %% Styling
-    class User,Session,Diagram fill:#e3f2fd,stroke:#1976d2"""
-    
-    def _generate_er_diagram(self, prompt: str) -> str:
-        """Generate ER diagram Mermaid code"""
-        return """erDiagram
-    USER {
-        int id PK
-        string username
-        string email
-        datetime created_at
-    }
-    
-    SESSION {
-        string id PK
-        int user_id FK
-        string diagram_type
-        text prompt
-        text generated_code
-        datetime created_at
-    }
-    
-    DIAGRAM_TEMPLATE {
-        int id PK
-        string name
-        string type
-        text template_code
-        boolean is_active
-    }
-    
-    USER ||--o{ SESSION : creates
-    DIAGRAM_TEMPLATE ||--o{ SESSION : uses"""
-    
-    def _generate_state_diagram(self, prompt: str) -> str:
-        """Generate state diagram Mermaid code"""
-        return """stateDiagram-v2
-    [*] --> Idle
-    Idle --> Processing : User Input
-    Processing --> Generating : Valid Input
-    Processing --> Error : Invalid Input
-    Generating --> Completed : Success
-    Generating --> Error : Failed
-    Error --> Idle : Retry
-    Completed --> Idle : New Request
-    Completed --> [*] : Exit
-    
-    state Processing {
-        [*] --> Validating
-        Validating --> Parsing
-        Parsing --> [*]
-    }"""
-
     def test_service(self) -> Tuple[bool, Optional[str]]:
         """
         Test the Mermaid service
@@ -308,7 +425,7 @@ Please generate the corresponding Mermaid diagram code.
             Tuple[bool, Optional[str]]: (is_working, error_message)
         """
         try:
-            test_code, error = self.generate_mermaid_code("test diagram", "flowchart")
+            test_code, error, _ = self.generate_mermaid_code("test diagram", "flowchart")
             if test_code:
                 return True, None
             else:

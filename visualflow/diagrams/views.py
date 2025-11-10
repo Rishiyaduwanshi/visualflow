@@ -145,7 +145,7 @@ class GenerateDiagramView(View):
             from .services.mermaid_service import mermaid_service
             
             # Generate Mermaid code based on diagram type
-            mermaid_code, error = mermaid_service.generate_mermaid_code(
+            mermaid_code, error, detected_type = mermaid_service.generate_mermaid_code(
                 session.prompt, 
                 session.diagram_type
             )
@@ -155,6 +155,11 @@ class GenerateDiagramView(View):
                 session.error_message = error
                 session.save()
                 return
+            
+            # Update diagram type if AI detected a better one
+            if detected_type and detected_type != session.diagram_type:
+                logger.info(f"AI detected diagram type: {detected_type} (original: {session.diagram_type})")
+                session.diagram_type = detected_type
             
             # Save results - Mermaid renders in frontend, no server-side SVG needed
             session.generated_uml = mermaid_code
@@ -186,8 +191,8 @@ class DiagramDisplayView(DetailView):
         session = self.get_object()
         
         context.update({
-            'diagram_type_display': dict(AppConstants.DIAGRAM_TYPES).get(
-                session.diagram_type, session.diagram_type.title()
+            'diagram_type_display': AppConstants.DIAGRAM_TYPE_DISPLAY.get(
+                session.diagram_type, session.diagram_type.upper()
             ),
         })
         return context

@@ -2,6 +2,9 @@
 class AppConstants:
     """Central place for all application constants"""
     
+    # Mermaid.js Version
+    MERMAID_VERSION = '10.9.1'
+    
     # Diagram Types
     DIAGRAM_TYPES = {
         'UML': 'uml',
@@ -10,6 +13,27 @@ class AppConstants:
         'FLOWCHART': 'flowchart',
         'SYSTEM_DESIGN': 'system_design',
         'CUSTOM': 'custom'
+    }
+    
+    # Reverse mapping for display
+    DIAGRAM_TYPE_DISPLAY = {
+        'uml': 'UML',
+        'class': 'UML',
+        'erd': 'ERD',
+        'er': 'ERD',
+        'dfd': 'DFD',
+        'flowchart': 'Flowchart',
+        'system_design': 'System Design',
+        'custom': 'Custom',
+        'sequence': 'Sequence Diagram',
+        'state': 'State Diagram',
+        'gantt': 'Gantt Chart',
+        'pie': 'Pie Chart',
+        'journey': 'User Journey',
+        'git': 'Git Graph',
+        'mindmap': 'Mindmap',
+        'timeline': 'Timeline',
+        'quadrant': 'Quadrant Chart',
     }
     
 
