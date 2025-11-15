@@ -1,39 +1,31 @@
 # VisualFlow - AI-Powered Diagram Generator
 
-VisualFlow is a fullstack Django application that generates professional diagrams from textual descriptions using AI. Built with Django, PostgreSQL, Mermaid.js, and powered by Groq AI for intelligent diagram generation.
+VisualFlow is a fullstack Django application that generates professional, emoji-enhanced diagrams from textual descriptions using AI. Built with Django, PostgreSQL, Mermaid.js v10.9.1, and powered by Groq AI (`openai/gpt-oss-120b`) with intelligent two-step diagram generation.
 
 ## 🚀 Features
 
-- **AI-Powered Generation**: Uses LangChain + Groq LLM (`llama3-8b-8192`) to generate Mermaid.js diagrams
-- **Multiple Diagram Types**: Supports flowcharts, sequence diagrams, class diagrams, ER diagrams, and more
-- **Auto-Detection**: Automatically detects diagram type from user prompts
-- **Professional Rendering**: High-quality SVG/PNG diagram output via Mermaid.js
-- **Session Management**: Stores all generated diagrams with full history
-- **Responsive UI**: Modern, mobile-friendly interface built with Tailwind CSS
-- **Download Options**: Export diagrams as SVG or PNG images
-- **Clean User Experience**: Users see only diagrams, technical code is hidden
-- **PostgreSQL Database**: Production-ready database with SSL support
+### 🤖 AI Generation
+- **Two-Step AI Approach**: 
+  - Step 1: Analyzer extracts diagram type, entities, and relationships from user prompt
+  - Step 2: Specialized prompts (9 types) generate diagram with perfect Mermaid v10.9.1 syntax
+- **Powered by**: LangChain + Groq AI (`openai/gpt-oss-120b` model at temperature 0.3)
+- **Smart Auto-Detection**: Automatically detects best diagram type from natural language
 
-## 🏗️ Architecture
+### 🎨 Diagram Types
+- **Flowcharts** (📊): Process flows with decision points and loops
+- **UML Class Diagrams** (🏗️): Inheritance, composition, aggregation with proper multiplicity
+- **ER Diagrams** (🗃️): Entity-relationship with correct cardinality syntax
+- **Sequence Diagrams** (📡): Interaction flows with participants and messages
+- **State Diagrams** (🔀): State machines with transitions
+- **Data Flow Diagrams (DFD)** (🔄): Level 0, 1, 2+ with processes and data stores
+- **System Design** (🏗️): Microservices, client-server architectures
+- **Custom Diagrams** (🎨): AI auto-detects best type from description
 
-```
-visualflow/
-├── config/                    # Modular configuration
-│   ├── env_config.py         # Environment variables & SSL config
-│   └── constants.py          # Application constants
-├── diagrams/                 # Main Django application
-│   ├── models.py            # Session model with UUID primary keys
-│   ├── views.py             # Clean class-based views
-│   ├── admin.py             # Admin interface
-│   ├── services/            # Business logic
-│   │   ├── ai_service.py    # Template-based generation
-│   │   └── mermaid_service.py  # AI-powered Mermaid generation
-│   └── urls.py              # Simple URL routing
-├── templates/               # Django templates
-│   └── diagrams/           # Clean user-focused templates
-├── theme/                   # Tailwind CSS theme
-└── static/                  # Static files
-```
+### 🎨 Visual Enhancements
+- **Emoji-Enhanced Diagrams**: Safe emoji usage in labels for visual clarity (🎯 ⚙️ 💾 ✅ ❌)
+- **Professional Design**: High-quality SVG rendering with proper spacing
+- **Color-Coded Elements**: Context-appropriate emojis for better understanding
+
 
 ## 📋 Requirements
 
@@ -168,19 +160,6 @@ All configuration is managed through environment variables in the `config/` dire
 | `DB_SSL_REQUIRE` | Enable SSL for database | `false` |
 | `DEBUG` | Django debug mode | `True` |
 
-## 📊 Supported Diagram Types
-
-| Type | Description | Mermaid Support |
-|------|-------------|-----------------|
-| **Flowchart** | Process flowcharts | `flowchart TD/LR` |
-| **Sequence** | Interaction diagrams | `sequenceDiagram` |  
-| **Class** | UML class diagrams | `classDiagram` |
-| **ER** | Entity relationship diagrams | `erDiagram` |
-| **State** | State transition diagrams | `stateDiagram-v2` |
-| **Gantt** | Project timelines | `gantt` |
-| **Pie** | Statistical charts | `pie` |
-| **Custom** | Any other diagram type | Auto-detected |
-
 ## 🎨 Usage Examples
 
 ### Flowchart Example
@@ -217,45 +196,7 @@ Generate a class diagram for a payment processing system with Payment, PaymentMe
 - `/history/` - Browse all diagrams
 - `/download/<session_id>/` - Download diagram files
 
-## 🛠️ Development
 
-### Project Structure
-
-```
-visualflow/
-├── config/                    # Configuration and constants
-├── diagrams/                  # Main Django app
-│   ├── services/             # Business logic services
-│   ├── migrations/           # Database migrations
-│   └── templates/            # App templates
-├── templates/                # Global templates
-├── theme/                    # Tailwind CSS theme
-├── static/                   # Static files
-├── media/                    # User uploads
-└── logs/                     # Application logs
-```
-
-### Key Components
-
-1. **AI Service** (`diagrams/services/ai_service.py`)
-   - Diagram type detection
-   - Template-based generation fallback
-
-2. **Mermaid Service** (`diagrams/services/mermaid_service.py`)
-   - LangChain + Groq LLM integration
-   - AI-powered Mermaid.js code generation
-   - Syntax validation and cleanup
-   - Multiple diagram type support
-
-3. **Models** (`diagrams/models.py`)
-   - Session management
-   - Template storage
-   - User feedback
-
-4. **Views** (`diagrams/views.py`)
-   - Class-based views
-   - API endpoints
-   - Error handling
 
 ## 🛠️ Technology Stack
 
@@ -269,10 +210,6 @@ visualflow/
 - **Mermaid.js 10.6.1** - Diagram rendering engine
 - **Tailwind CSS** - Utility-first CSS framework
 - **Vanilla JavaScript** - Interactive features
-
-### DevOps
-- **Python-dotenv** - Environment management
-- **Modular Configuration** - Clean separation of concerns
 
 ### Adding New Diagram Types
 
@@ -288,105 +225,17 @@ DIAGRAM_TYPES = {
 3. Update templates and UI
 4. Test with various prompts
 
-## 🚀 Deployment
+## 🔧 Architecture
 
-### Production Setup
+### Two-Step AI Generation
 
-1. **Environment Variables**
-```bash
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com
-SECRET_KEY=production-secret-key
 ```
-
-2. **Static Files**
-```bash
-python manage.py collectstatic
-python manage.py tailwind build
+User Prompt → Step 1: Analyzer → Step 2: Generator → Error Fixing → Mermaid Render
+     ↓             (JSON extract)     (specialized         (6 regex         ↓
+"Create UML"       diagram_type       prompts)            patterns)    Beautiful SVG
+                   entities
+                   relationships
 ```
-
-3. **Database**
-```bash
-python manage.py migrate --run-syncdb
-```
-
-4. **Web Server** (using Gunicorn)
-```bash
-gunicorn visualflow.wsgi:application --bind 0.0.0.0:8000
-```
-
-### Docker Deployment
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-RUN python manage.py collectstatic --noinput
-
-EXPOSE 8000
-CMD ["gunicorn", "visualflow.wsgi:application", "--bind", "0.0.0.0:8000"]
-```
-
-## 🧪 Testing
-
-```bash
-# Run tests
-python manage.py test
-
-# With coverage
-pip install coverage
-coverage run --source='.' manage.py test
-coverage report
-```
-
-## 📝 License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## 🚀 Deployment
-
-### Production Setup
-
-1. **Environment Variables**
-```bash
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com
-SECRET_KEY=production-secret-key
-DB_SSL_REQUIRE=true
-DB_SSL_MODE=require
-```
-
-2. **Static Files & Tailwind**
-```bash
-python manage.py collectstatic
-python manage.py tailwind build
-```
-
-3. **Database Migration**
-```bash
-python manage.py migrate
-```
-
-4. **Web Server** (using Gunicorn)
-```bash
-gunicorn visualflow.wsgi:application --bind 0.0.0.0:8000
-```
-
-### Cloud Database Setup (Aiven, AWS RDS, etc.)
-
-1. **Create PostgreSQL database** in your cloud provider
-2. **Enable SSL** and download certificates if needed
-3. **Update .env** with cloud database credentials:
-   ```env
-   DB_SSL_REQUIRE=true
-   DB_SSL_MODE=require
-   DB_SSL_CA_CERT=-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----
-   ```
-4. **Test connection** before deploying
 
 ## 🤝 Contributing
 
