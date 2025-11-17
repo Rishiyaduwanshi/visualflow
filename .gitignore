@@ -342,6 +342,9 @@ storybook-static
 # Temporary folders
 tmp/
 temp/
+others 
+demo
+report
 
 # TailwindCSS
 /theme/static_src/node_modules/
@@ -497,6 +500,4 @@ service-account.json
 prompt.md
 .github
 =======
->>>>>>> origin/main
-
 # End of .gitignore
